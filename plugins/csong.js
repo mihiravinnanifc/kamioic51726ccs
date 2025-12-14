@@ -37,19 +37,28 @@ cmd({
   react: "🍁",
   desc: "Send a YouTube song to a WhatsApp Channel (voice + details)",
   category: "channel",
-  use: ".csong <song name or YouTube link>/<channel JID>",
+  use: ".csong <song name or YouTube link> /<channel JID>",
   filename: __filename,
 }, async (conn, mek, m, { from, reply, q }) => {
   try {
 
-    if (!q || !q.includes("/")) {
-      return reply("⚠️ Use format:\n.csong <song name or YouTube link>/<channel JID>\n\nExample:\n.csong Shape of You/1203630xxxxx@newsletter\n.csong https://youtu.be/xxxxx/1203630xxxxx@newsletter");
+    if (!q) {
+      return reply("⚠️ Use format:\n.csong <song name or YouTube link> /<channel JID>");
     }
 
-    const [input, channelJid] = q.split("/").map(x => x.trim());
+    // ✅ FIX: support space before slash
+    let cleaned = q.trim();
+
+    let lastSlash = cleaned.lastIndexOf("/");
+    if (lastSlash === -1) {
+        return reply("⚠️ Use format:\n.csong <name or link> /<channel JID>");
+    }
+
+    let input = cleaned.substring(0, lastSlash).trim();
+    let channelJid = cleaned.substring(lastSlash + 1).trim();
 
     if (!channelJid.endsWith("@newsletter")) {
-      return reply("❌ Invalid channel JID! It should end with @newsletter");
+      return reply("❌ Invalid channel JID! Must end with @newsletter");
     }
 
     if (!input) return reply("⚠️ Please provide a song name or YouTube URL.");
@@ -57,7 +66,7 @@ cmd({
     // Detect if input is a YouTube link
     const isYT = input.includes("youtube.com") || input.includes("youtu.be");
 
-    let apiUrl = isYT
+    const apiUrl = isYT
       ? `https://api.nekolabs.my.id/downloader/youtube/play/v1?url=${encodeURIComponent(input)}`
       : `https://api.nekolabs.my.id/downloader/youtube/play/v1?q=${encodeURIComponent(input)}`;
 
@@ -123,7 +132,7 @@ cmd({
       seconds: durationSeconds
     }, { quoted: fakevCard });
 
-    // Clean up
+    // Clean temp
     fs.unlinkSync(tempPath);
     fs.unlinkSync(voicePath);
 
