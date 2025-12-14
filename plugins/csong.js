@@ -24,7 +24,6 @@ END:VCARD`
     }
 };
 
-// Convert "3:17" → seconds
 function toSeconds(time) {
     if (!time) return 0;
     const p = time.split(":").map(Number);
@@ -39,12 +38,11 @@ cmd({
   category: "channel",
   use: ".csong <song name or youtube link> /<channel JID>",
   filename: __filename,
-}, async (conn, mek, m, { from, reply, q }) => {
+}, async (conn, mek, m, { reply, q }) => {
   try {
 
     if (!q) return reply("⚠️ Format:\n.csong <song or link> /<channel jid>");
 
-    // Support space before "/"
     let cleaned = q.trim();
     let lastSlash = cleaned.lastIndexOf("/");
 
@@ -57,36 +55,42 @@ cmd({
     if (!channelJid.endsWith("@newsletter"))
         return reply("❌ Invalid channel JID! Must end with @newsletter");
 
-    if (!input)
-        return reply("⚠️ Please provide a YouTube link or song name.");
+    const isYT = input.includes("youtu");
 
-    // Detect YouTube link
-    const isYT = input.includes("youtu.be") || input.includes("youtube.com");
-
-    // FIXED API HANDLING
     let apiUrl;
 
     if (isYT) {
-        // Fixed: direct link downloader
-        apiUrl = `https://api.nekolabs.my.id/downloader/youtube?url=${encodeURIComponent(input)}`;
+        // ⭐ WORKING YOUTUBE LINK API
+        apiUrl = `https://api.vihangayt.asia/downloader/ytmp3?url=${encodeURIComponent(input)}`;
     } else {
-        // Search fallback
+        // ⭐ Search with Nekolabs
         apiUrl = `https://api.nekolabs.my.id/downloader/youtube/play/v1?q=${encodeURIComponent(input)}`;
     }
 
     const res = await fetch(apiUrl);
     const data = await res.json();
 
-    if (!data?.success || !data?.result)
-        return reply("❌ API error – Song not found.");
+    let meta, dlUrl;
 
-    const meta = data.result.metadata;
-    const dlUrl = data.result.downloadUrl;
+    if (isYT) {
+        if (!data?.url) return reply("❌ Invalid YouTube Link.");
+        meta = {
+            title: data.title,
+            duration: data.duration || "0:00",
+            channel: "YouTube",
+            cover: data.thumbnail
+        };
+        dlUrl = data.url;
+    } else {
+        if (!data?.success) return reply("❌ Song not found.");
+        meta = data.result.metadata;
+        dlUrl = data.result.downloadUrl;
+    }
 
     // Thumbnail
     let buffer;
     try {
-        const thumb = await fetch(meta.thumbnail || meta.cover);
+        const thumb = await fetch(meta.cover);
         buffer = Buffer.from(await thumb.arrayBuffer());
     } catch {
         buffer = null;
@@ -105,7 +109,7 @@ cmd({
         caption
     }, { quoted: fakevCard });
 
-    // Download audio
+    // Download + Convert
     const tempPath = path.join(__dirname, `../temp/${Date.now()}.mp3`);
     const voicePath = path.join(__dirname, `../temp/${Date.now()}.opus`);
 
@@ -113,7 +117,6 @@ cmd({
     const audioBuffer = Buffer.from(await audioData.arrayBuffer());
     fs.writeFileSync(tempPath, audioBuffer);
 
-    // Convert to .opus
     await new Promise((resolve, reject) => {
         ffmpeg(tempPath)
             .audioCodec("libopus")
@@ -134,11 +137,12 @@ cmd({
         seconds: durationSeconds
     }, { quoted: fakevCard });
 
-    // Clean up
     fs.unlinkSync(tempPath);
     fs.unlinkSync(voicePath);
 
-    reply(`*✅ Song sent successfully*\n\n*🎧 Title* : ${meta.title}\n*🔖 Channel* : ${channelJid}`);
+    reply(`*✅ Song sent successfully!*  
+🎧 *${meta.title}*  
+📢 Channel: *${channelJid}*`);
 
   } catch (err) {
     console.error(err);
