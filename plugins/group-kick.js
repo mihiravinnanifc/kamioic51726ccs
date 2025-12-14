@@ -1,47 +1,47 @@
 const { cmd } = require('../command');
-const { getGroupAdmins } = require('../lib/functions');
 
 cmd({
-    pattern: 'kick',
-    react: '🙃',
-    desc: 'Removes a user by replying to their message & reacts',
-    fromMe: true,
-    type: 'group'
-}, async (message, match) => {
+    pattern: "kick",
+    alias: ["remove", "k"],
+    desc: "Removes a user from the group by reply or mention",
+    category: "admin",
+    react: "❌",
+    filename: __filename
+},
+async (conn, mek, m, { from, isGroup, isBotAdmins, isAdmins, reply }) => {
     try {
-        if (!message.isGroup) return await message.send('⚠️ This command only works in groups.');
+        if (!isGroup) return reply("📛 *Group command only!*");
+        if (!isAdmins) return reply("📛 *Only admins can use this command!*");
+        if (!isBotAdmins) return reply("📛 *Bot must be admin!*");
 
-        const botNumber = message.conn.user.jid.split(':')[0] + '@s.whatsapp.net';
-        const groupAdmins = await getGroupAdmins(message.chat);
+        let mentionedJid;
 
-        if (!groupAdmins.includes(botNumber)) {
-            return await message.send('⚠️ I need to be an admin to kick users.');
+        // Mentioned
+        if (mek.message?.extendedTextMessage?.contextInfo?.mentionedJid?.length) {
+            mentionedJid = mek.message.extendedTextMessage.contextInfo.mentionedJid[0];
+        }
+        // Reply
+        else if (mek.message?.extendedTextMessage?.contextInfo?.participant) {
+            mentionedJid = mek.message.extendedTextMessage.contextInfo.participant;
+        } else {
+            return reply("⚠️ *Reply to a user's message or mention them to kick!*"); 
         }
 
-        if (!message.quoted) {
-            return await message.send('⚠️ Please reply to the user\'s message you want to kick.');
+        // Bot detect
+        const botJid = conn.user.id?.split(":")[0] + "@s.whatsapp.net";
+        if (mentionedJid === botJid) {
+            return reply("😒 *It's me!*");
         }
 
-        const userToKick = message.quoted.sender;
+        await conn.groupParticipantsUpdate(from, [mentionedJid], "remove");
 
-        if (groupAdmins.includes(userToKick)) {
-            return await message.send('⚠️ Cannot kick an admin!');
-        }
-
-        // Remove user
-        await message.groupRemove([userToKick]);
-
-        // React to the original message
-        await message.conn.sendMessage(message.chat, {
-            react: {
-                text: '✅', // Emoji reaction
-                key: message.quoted.key
-            }
+        await conn.sendMessage(from, { 
+            text: `✅ *Successfully Removed:* @${mentionedJid.split("@")[0]}`,
+            mentions: [mentionedJid]
         });
 
-        await message.send('✅ User has been removed from the group and reaction added.');
-    } catch (error) {
-        console.log(error);
-        await message.send('❌ Failed to kick the user.');
+    } catch (err) {
+        console.log(err);
+        reply("❌ *Failed to remove the user!*");
     }
 });
