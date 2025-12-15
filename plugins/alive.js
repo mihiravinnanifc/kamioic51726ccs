@@ -49,19 +49,25 @@ async (robin, mek, m, {
 
         // Stylish Alive Caption
        const status = `
-👋 Hello ${pushname}, I am alive now !!
+👋 𝐇𝐞𝐥𝐥𝐨 ${pushname}, 𝐈 𝐚𝐦 𝐚𝐥𝐢𝐯𝐞 𝐧𝐨𝐰 !!
 
-╭─〔 💠 ALIVE STATUS 💠 〕─◉
-│
-│🐼 *Bot*: 𝐑𝐀𝐍𝐔𝐌𝐈𝐓𝐇𝐀-𝐗-𝐌𝐃
-│🤵‍♂ *Owner*: ᴴᴵᴿᵁᴷᴬ ᴿᴬᴺᵁᴹᴵᵀᴴᴬ
-│⏰ *Uptime*: ${runtime(process.uptime())}
-│⏳ *Ram*: ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB / ${(os.totalmem() / 1024 / 1024).toFixed(2)}MB
-│🖊 *Prefix*: [ ${config.PREFIX} ]
-│🛠 *Mode*: [ ${config.MODE} ]
-│🖥 *Host*: ${os.hostname()}
-│🌀 *Version*: ${config.BOT_VERSION}
-╰─────────────────────────────⊷
+*╭─〔  DATE & TIME INFO 〕─◉*
+*│*📅 *\`Date:\`*: YYYY-MM-DD
+*│*⏰ *\`Time:\`*: xx:xx:xx PM/AM
+*╰────────────⊷*
+
+*╭─〔 ALIVE STATUS INFO 〕─◉*
+*│*
+*│*🐼 *\`Bot\`*: 𝐑𝐀𝐍𝐔𝐌𝐈𝐓𝐇𝐀-𝐗-𝐌𝐃
+*│*🤵‍♂ *\`Owner\`*: ᴴᴵᴿᵁᴷᴬ ᴿᴬᴺᵁᴹᴵᵀᴴᴬ
+*│*👤 *\`User\`*: ${pushname}
+*│*📟 *\`Uptime\`*: ${runtime(process.uptime())}
+*│*⏳ *\`Ram\`*: ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB / ${(os.totalmem() / 1024 / 1024).toFixed(2)}MB
+*│*🖊 *\`Prefix\`*: [ ${config.PREFIX} ]
+*│*🛠 *\`Mode\`*: [ ${config.MODE} ]
+*│*🖥 *\`Host\`*: ${os.hostname()}
+*│*🌀 *\`Version\`*: ${config.BOT_VERSION}
+*╰────────────────⊷*
      
       ☘ ʙᴏᴛ ᴍᴇɴᴜ  - .menu
       🔥 ʙᴏᴛ ꜱᴘᴇᴇᴅ - .ping
