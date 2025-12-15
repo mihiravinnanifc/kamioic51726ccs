@@ -33,7 +33,7 @@ cmd({
     filename: __filename
 },
 async (robin, mek, m, {
-    from, pushname, uoted, reply, sender
+    from, pushname, quoted, reply, sender
 }) => {
     try {
         await robin.sendPresenceUpdate('recording', from);
@@ -47,12 +47,18 @@ async (robin, mek, m, {
             ptt: true
         }, { quoted: fakevCard });
 
+        // Get Sri Lankan Date & Time
+        const options = { timeZone: 'Asia/Colombo', hour12: true };
+        const now = new Date().toLocaleString('en-US', options);
+        const date = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' }); // YYYY-MM-DD
+        const time = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Colombo' });
+
         // Stylish Alive Caption
-       const status = `👋 𝐇𝐞𝐥𝐥𝐨 ${pushname}, 𝐈 𝐚𝐦 𝐚𝐥𝐢𝐯𝐞 𝐧𝐨𝐰 !!
+        const status = `👋 𝐇𝐞𝐥𝐥𝐨 ${pushname}, 𝐈 𝐚𝐦 𝐚𝐥𝐢𝐯𝐞 𝐧𝐨𝐰 !!
 
 *╭─〔 DATE & TIME INFO 〕─◉*
-*│*📅 *\`Date:\`*: YYYY-MM-DD
-*│*⏰ *\`Time:\`*: xx:xx:xx PM/AM
+*│*📅 *\`Date:\`*: ${date}
+*│*⏰ *\`Time:\`*: ${time}
 *╰────────────⊷*
 
 *╭─〔 ALIVE STATUS INFO 〕─◉*
@@ -76,18 +82,13 @@ async (robin, mek, m, {
         // Send Image + Caption
         await robin.sendMessage(from, {
             image: {
-                url: "https://raw.githubusercontent.com/Ranumithaofc/RANU-FILE-S-/refs/heads/main/images/GridArt_20250726_193256660.jpg" // You can replace this with your own ALIVE_IMG URL
+                url: "https://raw.githubusercontent.com/Ranumithaofc/RANU-FILE-S-/refs/heads/main/images/GridArt_20250726_193256660.jpg"
             },
             caption: status,
             contextInfo: {
                 mentionedJid: [sender],
                 forwardingScore: 999,
-                isForwarded: false,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '',
-                    newsletterName: '',
-                    serverMessageId: 143
-                }
+                isForwarded: false
             }
         }, { quoted: mek });
 
