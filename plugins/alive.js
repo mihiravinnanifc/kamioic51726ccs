@@ -48,10 +48,9 @@ async (robin, mek, m, {
         }, { quoted: fakevCard });
 
         // Stylish Alive Caption
-       const status = `
-👋 𝐇𝐞𝐥𝐥𝐨 ${pushname}, 𝐈 𝐚𝐦 𝐚𝐥𝐢𝐯𝐞 𝐧𝐨𝐰 !!
+       const status = `👋 𝐇𝐞𝐥𝐥𝐨 ${pushname}, 𝐈 𝐚𝐦 𝐚𝐥𝐢𝐯𝐞 𝐧𝐨𝐰 !!
 
-*╭─〔  DATE & TIME INFO 〕─◉*
+*╭─〔 DATE & TIME INFO 〕─◉*
 *│*📅 *\`Date:\`*: YYYY-MM-DD
 *│*⏰ *\`Time:\`*: xx:xx:xx PM/AM
 *╰────────────⊷*
@@ -72,7 +71,7 @@ async (robin, mek, m, {
       ☘ ʙᴏᴛ ᴍᴇɴᴜ  - .menu
       🔥 ʙᴏᴛ ꜱᴘᴇᴇᴅ - .ping
 
-> 𝐌𝐚𝐝𝐞 𝐛𝐲 𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔 🥶`;
+> © Powerd by 𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗 🌛`;
 
         // Send Image + Caption
         await robin.sendMessage(from, {
