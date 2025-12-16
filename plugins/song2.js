@@ -131,7 +131,6 @@ cmd(
 
         const choice = text.trim();
         const safeTitle = video.title.replace(/[\\/:*?"<>|]/g, "").slice(0, 80);
-
         const tempMp3 = path.join(tempDir, `${Date.now()}.mp3`);
         const tempOpus = path.join(tempDir, `${Date.now()}.opus`);
 
@@ -157,7 +156,7 @@ cmd(
             { quoted: mek }
           );
 
-          // 2️⃣ Document
+        // 2️⃣ Document
         } else if (choice === "2") {
           await conn.sendMessage(
             from,
@@ -169,7 +168,7 @@ cmd(
             { quoted: mek }
           );
 
-          // 3️⃣ Voice note
+        // 3️⃣ Voice note
         } else if (choice === "3") {
           const audioRes = await axios.get(audioUrl, { responseType: "arraybuffer" });
           fs.writeFileSync(tempMp3, audioRes.data);
@@ -198,6 +197,7 @@ cmd(
 
           fs.unlinkSync(tempMp3);
           fs.unlinkSync(tempOpus);
+
         } else {
           return reply("*❌ Invalid choice!*");
         }
@@ -207,11 +207,12 @@ cmd(
           react: { text: "✔️", key: mekInfo.key },
         });
 
-        // Remove listener after reply
+        // Remove listener after one reply
         conn.ev.off("messages.upsert", handler);
       };
 
       conn.ev.on("messages.upsert", handler);
+
     } catch (e) {
       console.error(e);
       reply("*Error*");
