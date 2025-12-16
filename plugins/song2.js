@@ -92,7 +92,7 @@ cmd(
 2️⃣ Document 📁
 3️⃣ Voice Note 🎤
 
-> © 𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗`;
+> © Powerd by 𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗 🌛`;
 
       const sentMsg = await conn.sendMessage(
         from,
