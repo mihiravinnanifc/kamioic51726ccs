@@ -8,7 +8,7 @@ const ffmpeg = require("fluent-ffmpeg");
 cmd({
   pattern: "song4",
   react: "🎵",
-  desc: "YouTube Song Downloader",
+  desc: "YouTube Song Downloader (Multi Reply)",
   category: "download",
   use: ".song4 <query>",
   filename: __filename,
@@ -57,6 +57,7 @@ cmd({
 ⏱️ ${video.timestamp}
 
 Reply with number 👇
+(You can reply multiple times)
 
 1️⃣ Audio  
 2️⃣ MP3 Document  
@@ -75,7 +76,7 @@ Reply with number 👇
       });
     };
 
-    /* ===== ONE TIME LISTENER ===== */
+    /* ===== MULTI REPLY LISTENER ===== */
     const handler = async (up) => {
       const msg = up.messages?.[0];
       if (!msg?.message) return;
@@ -87,17 +88,18 @@ Reply with number 👇
       const stanzaId =
         msg.message.extendedTextMessage?.contextInfo?.stanzaId;
 
+      // only replies to this menu
       if (stanzaId !== menuId) return;
 
-      // remove listener after first valid reply
-      conn.ev.off("messages.upsert", handler);
+      if (!["1", "2", "3"].includes(text)) {
+        return reply("❌ 1, 2, or 3 kiyala reply karanna");
+      }
 
-      /* ⬇️ DOWNLOAD START */
+      /* ⬇️ DOWNLOAD */
       await react("⬇️", msg.key);
 
       /* ===== OPTION 1 : AUDIO ===== */
       if (text === "1") {
-        /* ⬆️ UPLOAD START */
         await react("⬆️", msg.key);
 
         await conn.sendMessage(
@@ -113,12 +115,11 @@ Reply with number 👇
       }
 
       /* ===== OPTION 2 : DOCUMENT ===== */
-      else if (text === "2") {
+      if (text === "2") {
         const buffer = await axios.get(songUrl, {
           responseType: "arraybuffer",
         });
 
-        /* ⬆️ UPLOAD START */
         await react("⬆️", msg.key);
 
         await conn.sendMessage(
@@ -135,7 +136,7 @@ Reply with number 👇
       }
 
       /* ===== OPTION 3 : VOICE NOTE ===== */
-      else if (text === "3") {
+      if (text === "3") {
         const opus = path.join(__dirname, `${Date.now()}.opus`);
 
         await new Promise((resolve, reject) => {
@@ -147,7 +148,6 @@ Reply with number 👇
             .on("error", reject);
         });
 
-        /* ⬆️ UPLOAD START */
         await react("⬆️", msg.key);
 
         await conn.sendMessage(
@@ -162,11 +162,6 @@ Reply with number 👇
 
         fs.unlinkSync(opus);
         await react("✔️", msg.key);
-      }
-
-      /* ===== INVALID ===== */
-      else {
-        reply("❌ 1, 2, or 3 kiyala reply karanna");
       }
     };
 
