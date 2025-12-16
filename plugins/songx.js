@@ -6,7 +6,7 @@ const ffmpeg = require('fluent-ffmpeg');
 const path = require('path');
 
 cmd({
-    pattern: "songx",
+    pattern: "song3",
     react: "🎵",
     desc: "Download YouTube MP3",
     category: "download",
@@ -14,7 +14,7 @@ cmd({
     filename: __filename
 }, async (conn, mek, m, { from, reply, q }) => {
     try {
-        // === QUERY HANDLING START ===
+        // === QUERY HANDLING ===
         let query = q?.trim();
         if (!query && m?.quoted) {
             query =
@@ -24,13 +24,10 @@ cmd({
         }
 
         if (!query) {
-            return reply(
-                "⚠️ Please provide a song name or YouTube link (or reply to a message)."
-            );
+            return reply("⚠️ Please provide a song name or YouTube link (or reply to a message).");
         }
-        // === QUERY HANDLING END ===
 
-        // Convert YouTube Shorts to normal links
+        // Shorts conversion
         if (query.match(/(https?:\/\/)?(www\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/)) {
             const videoID = query.match(/shorts\/([a-zA-Z0-9_-]+)/)[1];
             query = `https://www.youtube.com/watch?v=${videoID}`;
@@ -96,13 +93,20 @@ cmd({
             const dlUrl = result.audio_url;
 
             try {
-                // Download start reaction ⬇️
+                // Download start ⬇️
                 await conn.sendMessage(senderID, { react: { text: "⬇️", key: receivedMsg.key } });
 
+                // Fetch audio buffer
+                const audioRes = await axios.get(dlUrl, { responseType: 'arraybuffer' });
+                const audioBuffer = Buffer.from(audioRes.data);
+                fs.writeFileSync(tempPath, audioBuffer);
+
                 if (receivedText.trim() === "1") {
+                    // Upload ⬆️
                     await conn.sendMessage(senderID, { react: { text: "⬆️", key: receivedMsg.key } });
+                    const mp3Buffer = fs.readFileSync(tempPath);
                     await conn.sendMessage(senderID, {
-                        audio: { url: dlUrl },
+                        audio: mp3Buffer,
                         mimetype: "audio/mpeg",
                         ptt: false
                     }, { quoted: receivedMsg });
@@ -110,17 +114,15 @@ cmd({
                 } else if (receivedText.trim() === "2") {
                     await conn.sendMessage(senderID, { react: { text: "⬆️", key: receivedMsg.key } });
                     await conn.sendMessage(senderID, {
-                        document: { url: dlUrl },
+                        document: fs.readFileSync(tempPath),
                         mimetype: "audio/mpeg",
                         fileName: `${data.title}.mp3`
                     }, { quoted: receivedMsg });
 
                 } else if (receivedText.trim() === "3") {
-                    // Download audio stream properly
-                    const audioRes = await axios.get(dlUrl, { responseType: 'stream' });
-
+                    // Convert to Opus
                     await new Promise((resolve, reject) => {
-                        ffmpeg(audioRes.data)
+                        ffmpeg(tempPath)
                             .audioCodec('libopus')
                             .format('opus')
                             .audioBitrate('64k')
@@ -142,16 +144,17 @@ cmd({
                     fs.unlinkSync(voicePath);
 
                 } else {
-                    // Invalid option ❌
                     await conn.sendMessage(senderID, { react: { text: "❌", key: receivedMsg.key } });
                     return;
                 }
+
+                fs.unlinkSync(tempPath);
 
                 // Success ✔️
                 await conn.sendMessage(senderID, { react: { text: "✔️", key: receivedMsg.key } });
 
             } catch (err) {
-                console.error("Error sending audio:", err);
+                console.error("Audio send error:", err);
                 if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
                 if (fs.existsSync(voicePath)) fs.unlinkSync(voicePath);
                 await conn.sendMessage(senderID, { react: { text: "❌", key: receivedMsg.key } });
