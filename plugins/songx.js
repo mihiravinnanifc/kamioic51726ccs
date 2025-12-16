@@ -54,8 +54,8 @@ cmd({
 
 🔢 *Reply Below Number*
 1️⃣ *Audio Type*
-2️⃣ *Document Type*
-3️⃣ *Voice Note*
+2️⃣ *Document Type (MP3)*
+3️⃣ *Voice Note (Opus)*
 
 > © Powerd by 𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗 🌛`;
 
@@ -87,10 +87,14 @@ cmd({
                     await conn.sendMessage(senderID, { react: { text: '✔️', key: receivedMsg.key } });
                     break;
 
-                case "2": // Document
+                case "2": // Document (MP3)
                     await conn.sendMessage(senderID, { react: { text: '⬆️', key: receivedMsg.key } });
                     await conn.sendMessage(senderID, {
-                        document: { url: result.url, mimetype: "audio/mpeg", fileName: `${data.title}.mp3` }
+                        document: {
+                            url: result.url,
+                            mimetype: "audio/mpeg",
+                            fileName: `${data.title}.mp3`
+                        }
                     }, { quoted: receivedMsg });
                     await conn.sendMessage(senderID, { react: { text: '✔️', key: receivedMsg.key } });
                     break;
