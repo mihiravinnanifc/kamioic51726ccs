@@ -28,7 +28,7 @@ END:VCARD`,
 cmd(
   {
     pattern: "song2",
-    alias: ["play2", "song2", "play2"],
+    alias: ["play2", "play2"],
     react: "🎵",
     desc: "Download YouTube song (Audio) via Nekolabs API",
     category: "download",
@@ -61,9 +61,7 @@ cmd(
       }
 
       // API
-      const apiUrl = `https://api.nekolabs.my.id/downloader/youtube/play/v1?q=${encodeURIComponent(
-        query
-      )}`;
+      const apiUrl = `https://api.nekolabs.my.id/downloader/youtube/play/v1?q=${encodeURIComponent(q)}`;
       const res = await fetch(apiUrl);
       const data = await res.json();
 
