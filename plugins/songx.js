@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 
 cmd({
-    pattern: "song4",
+    pattern: "songx",
     react: "🎵",
     desc: "Download YouTube MP3 / Voice Note",
     category: "download",
@@ -79,23 +79,35 @@ cmd({
             const isReplyToBot = receivedMsg.message.extendedTextMessage?.contextInfo?.stanzaId === messageID;
 
             if (isReplyToBot) {
-                await conn.sendMessage(senderID, { react: { text: '⏳', key: receivedMsg.key } });
+
+                // React: download started
+                await conn.sendMessage(senderID, { react: { text: '⬇️', key: receivedMsg.key } });
 
                 switch (receivedText.trim()) {
                     case "1": // Audio
+                        // React: upload started
+                        await conn.sendMessage(senderID, { react: { text: '⬆️', key: receivedMsg.key } });
+
                         await conn.sendMessage(senderID, {
                             audio: { url: result.url },
                             mimetype: "audio/mpeg",
                             ptt: false,
                         }, { quoted: receivedMsg });
+
+                        // React: sent
+                        await conn.sendMessage(senderID, { react: { text: '✔️', key: receivedMsg.key } });
                         break;
 
                     case "2": // Document
+                        await conn.sendMessage(senderID, { react: { text: '⬆️', key: receivedMsg.key } });
+
                         await conn.sendMessage(senderID, {
                             document: { url: result.url },
                             mimetype: "audio/mpeg",
                             fileName: `${data.title}.mp3`
                         }, { quoted: receivedMsg });
+
+                        await conn.sendMessage(senderID, { react: { text: '✔️', key: receivedMsg.key } });
                         break;
 
                     case "3": // Voice Note (Opus)
@@ -110,6 +122,9 @@ cmd({
                             writer.on('finish', resolve);
                             writer.on('error', reject);
                         });
+
+                        // React: upload started
+                        await conn.sendMessage(senderID, { react: { text: '⬆️', key: receivedMsg.key } });
 
                         // Convert MP3 to Opus
                         await new Promise((resolve, reject) => {
@@ -130,6 +145,9 @@ cmd({
                             mimetype: "audio/ogg; codecs=opus",
                             ptt: true,
                         }, { quoted: receivedMsg });
+
+                        // React: sent
+                        await conn.sendMessage(senderID, { react: { text: '✔️', key: receivedMsg.key } });
 
                         // Clean up
                         fs.unlinkSync(tempInput);
