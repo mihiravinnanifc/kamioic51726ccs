@@ -38,11 +38,11 @@ cmd(
 
   async (conn, mek, m, { from, reply, q }) => {
     try {
-      if (!q) return reply("❓ Song name ekak hari YouTube link ekak hari denna.");
+      if (!q) return reply("⚠️ Please provide a song name or YouTube link (or reply to a message).");
 
       // Search YouTube
       const search = await yts(q);
-      if (!search.videos.length) return reply("❌ Song ekak hoyaganna bari una.");
+      if (!search.videos.length) return reply("❌ The song could not be found.");
 
       const video = search.videos[0];
       const ytUrl = video.url;
