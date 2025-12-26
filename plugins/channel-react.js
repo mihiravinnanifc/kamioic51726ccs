@@ -8,9 +8,9 @@ const DEFAULT_CHANNEL_JID = config.defaultChannelJid || "";
 cmd({
   pattern: "rch",
   react: "🤖",
-  desc: "Owner Only: Multi emoji reply to latest channel post or specific post",
+  desc: "Owner Only: Multi emoji reply to a channel post",
   category: "owner",
-  use: ".rch <post_link> <emoji1>|<emoji2> OR .rch latest <emoji1>|<emoji2>",
+  use: ".rch <post_link> <emoji1>|<emoji2>|<emoji3>",
   filename: __filename
 },
 async (conn, mek, m, { from, isOwner }) => {
@@ -31,18 +31,12 @@ async (conn, mek, m, { from, isOwner }) => {
     if (args.length < 2) {
       return reply(
 `❌ Usage:
-.rch <post_link> <emoji1>|<emoji2>
-OR
-.rch latest <emoji1>|<emoji2>`
+.rch <post_link> <emoji1>|<emoji2>|<emoji3>`
       );
     }
 
     // ---------------- POST LINK ----------------
-    let postLink = args[0];
-    if (postLink.toLowerCase() === "latest") {
-      if (!DEFAULT_CHANNEL_POST) return reply("⚠️ Default channel post not set in config!");
-      postLink = DEFAULT_CHANNEL_POST;
-    }
+    const postLink = args[0];
 
     // ---------------- JID ----------------
     const postJid = DEFAULT_CHANNEL_JID;
