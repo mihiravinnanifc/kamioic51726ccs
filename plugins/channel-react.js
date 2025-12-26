@@ -1,7 +1,6 @@
-// ================== IMPORTS ==================
-const fetch = require("node-fetch");
 const { cmd } = require("../command");
-
+const fetch = require("node-fetch");
+const axios = require("axios");
 // ================== API KEY ==================
 const BOT_API_KEY = "ADD_YOUR_API_KEY_HERE"; // asitha.top key
 
