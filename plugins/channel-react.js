@@ -1,14 +1,16 @@
-const fetch = require("node-fetch");
 const { cmd } = require("../command");
+const config = require("../config");
 
-const BOT_API_KEY = "ADD_YOUR_API_KEY_HERE";
+// ---------------- CONFIG ----------------
+const DEFAULT_CHANNEL_POST = config.defaultChannelPost || ""; // default post link
+const DEFAULT_CHANNEL_JID = config.defaultChannelJid || "";   // channel JID
 
 cmd({
   pattern: "rch",
   react: "🤖",
-  desc: "Owner Only: Multi react to latest channel post",
+  desc: "Owner Only: Multi react (as emoji replies) to latest channel post",
   category: "owner",
-  use: ".rch <channel_link> <emoji1>|<emoji2> OR .rch latest <emoji1>|<emoji2>",
+  use: ".rch <post_link> <emoji1>|<emoji2> OR .rch latest <emoji1>|<emoji2>",
   filename: __filename
 },
 async (conn, mek, m, { from, isOwner }) => {
@@ -30,60 +32,49 @@ async (conn, mek, m, { from, isOwner }) => {
     if (args.length < 2) {
       return reply(
 `❌ Usage:
-.rch <channel_link> <emoji1>|<emoji2>
+.rch <post_link> <emoji1>|<emoji2>
 OR
 .rch latest <emoji1>|<emoji2>`
       );
     }
 
-    let channelLink = args[0];
-    const emojis = args.slice(1).join(" ").split("|").map(e => e.trim()).filter(Boolean);
-
-    if (!emojis.length) return reply("❌ Emojis not found!");
-
-    // 🔎 LATEST POST DETECTION
-    if (channelLink.toLowerCase() === "latest") {
-      // replace "latest" with channel link from config / default
-      if (!config.defaultChannelLink) return reply("⚠️ Default channel not set in config!");
-      channelLink = config.defaultChannelLink;
-
-      // fetch latest post link from API
-      try {
-        const res = await fetch(`https://react.whyux-xec.my.id/api/latest?link=${encodeURIComponent(channelLink)}`, {
-          headers: { "x-api-key": BOT_API_KEY }
-        });
-        const data = await res.json();
-        if (!data?.success || !data?.latest) return reply("❌ Could not fetch latest post!");
-        channelLink = data.latest; // latest post link
-      } catch {
-        return reply("❌ Failed to fetch latest post!");
-      }
+    // ---------------- POST LINK ----------------
+    let postLink = args[0];
+    if (postLink.toLowerCase() === "latest") {
+      if (!DEFAULT_CHANNEL_POST) return reply("⚠️ Default channel post not set in config!");
+      postLink = DEFAULT_CHANNEL_POST;
     }
+
+    // Extract JID from config (must set manually)
+    const postJid = DEFAULT_CHANNEL_JID;
+    if (!postJid) return reply("⚠️ Channel JID not set in config!");
+
+    // ---------------- EMOJI LIST ----------------
+    const emojis = args.slice(1).join(" ").split("|").map(e => e.trim()).filter(Boolean);
+    if (!emojis.length) return reply("❌ Emojis not found!");
 
     let success = 0;
     let failed = 0;
 
     await conn.sendMessage(from, { react: { text: "⏳", key: m.key } });
 
+    // ---------------- SEND EMOJI REPLIES ----------------
     for (const emoji of emojis) {
       try {
-        const res = await fetch(
-          `https://react.whyux-xec.my.id/api/rch?link=${encodeURIComponent(channelLink)}&emoji=${encodeURIComponent(emoji)}`,
-          { headers: { "x-api-key": BOT_API_KEY } }
-        );
-        const data = await res.json().catch(() => null);
-        if (data?.success) success++;
-        else failed++;
-        await new Promise(r => setTimeout(r, 700));
-      } catch {
+        await conn.sendMessage(postJid, { text: emoji }, { quoted: m });
+        success++;
+        await new Promise(r => setTimeout(r, 500)); // small delay
+      } catch (err) {
+        console.error(err);
         failed++;
       }
     }
 
+    // ---------------- RESULT ----------------
     return reply(
-`🤖 *MULTI REACT DONE*
+`🤖 *MULTI EMOJI REPLY DONE*
 ━━━━━━━━━━━━━━
-🔗 Channel/Post: ${channelLink}
+🔗 Post: ${postLink}
 😀 Emojis: ${emojis.join(" ")}
 ✅ Success: ${success}
 ❌ Failed: ${failed}`
@@ -91,6 +82,6 @@ OR
 
   } catch (err) {
     console.error(err);
-    return reply("❌ React command failed!");
+    return reply("❌ Command failed!");
   }
 });
