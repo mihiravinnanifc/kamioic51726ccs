@@ -61,10 +61,10 @@ cmd({
 
         // 4️⃣ Define API links for download
         const formats = {
-            "240p": `https://sadiya-tech-apis.vercel.app/download/ytdl?url=${encodeURIComponent(ytUrl)}&format=240&apikey=YOU_API_KEY`,
-            "360p": `https://sadiya-tech-apis.vercel.app/download/ytdl?url=${encodeURIComponent(ytUrl)}&format=360&apikey=YOU_API_KEY`,
-            "480p": `https://sadiya-tech-apis.vercel.app/download/ytdl?url=${encodeURIComponent(ytUrl)}&format=480&apikey=YOU_API_KEY`,
-            "720p": `https://sadiya-tech-apis.vercel.app/download/ytdl?url=${encodeURIComponent(ytUrl)}&format=720&apikey=YOU_API_KEY`
+            "240p": `https://api.nekolabs.my.id/downloader/youtube/v1?url=${encodeURIComponent(ytUrl)}&format=240&apikey=YOU_API_KEY`,
+            "360p": `https://api.nekolabs.my.id/downloader/youtube/v1?url=${encodeURIComponent(ytUrl)}&format=360&apikey=YOU_API_KEY`,
+            "480p": `https://api.nekolabs.my.id/downloader/youtube/v1?url=${encodeURIComponent(ytUrl)}&format=480&apikey=YOU_API_KEY`,
+            "720p": `https://api.nekolabs.my.id/downloader/youtube/v1?url=${encodeURIComponent(ytUrl)}&format=720&apikey=YOU_API_KEY`
         };
 
         // 5️⃣ Send selection menu (image + caption)
