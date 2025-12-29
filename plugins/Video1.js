@@ -1,11 +1,5 @@
-const { cmd } = require('../command');
-const yts = require('yt-search');
-const axios = require('axios');
-
-              
-
 cmd({
-    pattern: "video1",
+    pattern: "video2",
     react: "🎬",
     desc: "Download YouTube MP4",
     category: "download",
@@ -13,7 +7,10 @@ cmd({
     filename: __filename
 }, async (conn, mek, m, { from, reply, q }) => {
     try {
-        if (!q) return reply("❓ What video do you want to download?");
+        if (!q) return reply("❓ *Please provide a video name or link!*");
+
+        const yts = (await import("yt-search")).default;
+        const axios = (await import("axios")).default;
 
         const search = await yts(q);
         if (!search.videos.length) return reply("❌ No results found for your query.");
@@ -21,15 +18,13 @@ cmd({
         const data = search.videos[0];
         const ytUrl = data.url;
 
-        // Define API links for multiple qualities
         const formats = {
-            "240p": `https://api.zenzxz.my.id/api/downloader/ytmp4v2?url=${encodeURIComponent(ytUrl)}&resolution=240`,
-            "360p": `https://api.zenzxz.my.id/api/downloader/ytmp4v2?url=${encodeURIComponent(ytUrl)}&resolution=360`,
-            "480p": `https://api.zenzxz.my.id/api/downloader/ytmp4v2?url=${encodeURIComponent(ytUrl)}&resolution=480`,
-            "720p": `https://api.zenzxz.my.id/api/downloader/ytmp4v2?url=${encodeURIComponent(ytUrl)}&resolution=720`
+            "240p": `https://api.nekolabs.my.id/downloader/youtube/v1?url=${encodeURIComponent(ytUrl)}&format=240`,
+            "360p": `https://api.nekolabs.my.id/downloader/youtube/v1?url=${encodeURIComponent(ytUrl)}&format=360`,
+            "480p": `https://api.nekolabs.my.id/downloader/youtube/v1?url=${encodeURIComponent(ytUrl)}&format=480`,
+            "720p": `https://api.nekolabs.my.id/downloader/youtube/v1?url=${encodeURIComponent(ytUrl)}&format=720`
         };
 
-        // Prepare caption
         const caption = `
 🎥 *Video Downloader.* 📥
 
@@ -47,7 +42,7 @@ cmd({
 🔹 1.3 480p (Video)
 🔹 1.4 720p (Video)
 
-📁 *Document Types:*
+📁 *Document Types*
 🔹 2.1 240p (Document)
 🔹 2.2 360p (Document)
 🔹 2.3 480p (Document)
@@ -94,21 +89,21 @@ cmd({
 
                 const { data: apiRes } = await axios.get(formats[selectedFormat]);
 
-                if (!apiRes?.success || !apiRes.data?.download_url) {
+                if (!apiRes?.success || !apiRes.result?.downloadUrl) {
                     return reply(`❌ Unable to download the ${selectedFormat} version. Try another one!`);
                 }
 
-                const result = apiRes.data;
+                const result = apiRes.result;
 
                 if (isDocument) {
                     await conn.sendMessage(senderID, {
-                        document: { url: result.download_url },
+                        document: { url: result.downloadUrl },
                         mimetype: "video/mp4",
-                        fileName: `${data.title}.mp4`
+                        fileName: `${result.title}.mp4`
                     }, { quoted: receivedMsg });
                 } else {
                     await conn.sendMessage(senderID, {
-                        video: { url: result.download_url },
+                        video: { url: result.downloadUrl },
                         mimetype: "video/mp4",
                         ptt:false,
                     }, { quoted: receivedMsg });
