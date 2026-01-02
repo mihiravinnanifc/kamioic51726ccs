@@ -11,10 +11,29 @@ cmd({
     filename: __filename
 }, async (conn, mek, m, { from, reply, q }) => {
     try {
-        if (!q) return reply("⚠️ Please provide a video name or YouTube link (or reply to a message)");
+        // 1️⃣ Determine the query (text or replied message)
+        let query = q?.trim();
 
-        const search = await yts(q);
-        if (!search.videos.length) return reply("❌ No results found.");
+        if (!query && m?.quoted) {
+            query =
+                m.quoted.message?.conversation ||
+                m.quoted.message?.extendedTextMessage?.text ||
+                m.quoted.text;
+        }
+
+        if (!query) {
+            return reply("⚠️ Please provide a video name or YouTube link (or reply to a message).");
+        }
+
+        // 2️⃣ Convert Shorts link to normal link
+        if (query.includes("youtube.com/shorts/")) {
+            const videoId = query.split("/shorts/")[1].split(/[?&]/)[0];
+            query = `https://www.youtube.com/watch?v=${videoId}`;
+        }
+
+        // 3️⃣ YouTube search
+        const search = await yts(query);
+        if (!search.videos.length) return reply("*❌ No results found.*");
 
         const data = search.videos[0];
         const ytUrl = data.url;
