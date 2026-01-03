@@ -10,11 +10,10 @@ cmd({
     category: "group",
     filename: __filename
 },           
-async (conn, mek, m, { from, isGroup, senderNumber, isAdmins, isBotAdmins, reply }) => {
+async (conn, mek, m, { from, isGroup, isOwner, senderNumber, isAdmins, isBotAdmins, reply }) => {
     try {
         if (!isGroup) return reply("❌ This command can only be used in groups.");
-        if (!isAdmins) return reply("❌ Only group admins can use this command.");
-        if (!isBotAdmins) return reply("❌ I need to be an admin to unmute the group.");
+        if (!isOwner) return reply("📛 *Owner only command!*");
 
         await conn.groupSettingUpdate(from, "not_announcement");
         reply("✅ Group has been unmuted. Everyone can send messages.");
