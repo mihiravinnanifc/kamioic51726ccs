@@ -82,7 +82,7 @@ cmd({
     await conn.sendMessage(from, {
       video: ptvBuffer,
       mimetype: "video/mp4",
-      ptt: true, // Treat as video note
+      ptv: true, // Treat as video note
     });
 
     // Reaction: Done
