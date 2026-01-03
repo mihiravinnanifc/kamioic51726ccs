@@ -9,60 +9,66 @@ cmd({
   desc: "Convert replied video to WhatsApp Video Note",
   category: "owner",
   react: "🎥",
+  use: ".gvn <reply to video>",
   filename: __filename,
 }, async (conn, mek, m, { from, reply }) => {
   try {
+    // -------- CHECK REPLY -----------
     if (!m.quoted || m.quoted.mtype !== "videoMessage") {
-      return reply("❌ Video ekakata reply karanna");
+      return reply("⚠️ *Please reply to a video!*");
     }
 
+    // Reaction: Downloading
     await conn.sendMessage(from, { react: { text: "⬇️", key: mek.key } });
 
-    const buffer = await m.quoted.download();
+    const videoBuffer = await m.quoted.download();
 
-    const input = path.join(__dirname, "../temp/in.mp4");
-    const output = path.join(__dirname, "../temp/out.mp4");
+    const tempInput = path.join(__dirname, `../temp/${Date.now()}.mp4`);
+    const tempOutput = path.join(__dirname, `../temp/${Date.now()}_ptv.mp4`);
 
-    fs.writeFileSync(input, buffer);
+    fs.writeFileSync(tempInput, videoBuffer);
 
-    await conn.sendMessage(from, { react: { text: "⬆️", key: mek.key } });
+    // Reaction: Converting
+    await conn.sendMessage(from, { react: { text: "🔄", key: mek.key } });
 
-    await new Promise((res, rej) => {
-      ffmpeg(input)
+    // -------- CONVERT TO VIDEO NOTE --------
+    await new Promise((resolve, reject) => {
+      ffmpeg(tempInput)
         .outputOptions([
-          "-vf scale=480:480:force_original_aspect_ratio=increase,crop=480:480",
+          "-vf scale=512:512:force_original_aspect_ratio=increase,crop=512:512",
           "-c:v libx264",
           "-profile:v baseline",
           "-level 3.0",
           "-pix_fmt yuv420p",
-          "-r 25",
+          "-r 30",
           "-c:a aac",
-          "-b:a 96k",
+          "-b:a 128k",
           "-movflags +faststart",
-          "-t 60"
+          "-t 60" // max 60s (WhatsApp limit)
         ])
-        .on("end", res)
-        .on("error", rej)
-        .save(output);
+        .on("end", resolve)
+        .on("error", reject)
+        .save(tempOutput);
     });
 
-    const final = fs.readFileSync(output);
+    const finalVideo = fs.readFileSync(tempOutput);
 
-    // 🔥 THIS IS THE KEY PART
+    // -------- SEND VIDEO NOTE --------
     await conn.sendMessage(from, {
-      video: final,
+      video: finalVideo,
       mimetype: "video/mp4",
-      ptv: true,
-      videoNote: true, // 👈 VERY IMPORTANT
-    }, { quoted: mek });
+      ptv: true, // 👈 THIS makes it Video Note (round)
+    });
 
+    // Reaction: Done
     await conn.sendMessage(from, { react: { text: "✔️", key: mek.key } });
 
-    fs.unlinkSync(input);
-    fs.unlinkSync(output);
+    // Cleanup
+    fs.unlinkSync(tempInput);
+    fs.unlinkSync(tempOutput);
 
   } catch (e) {
-    console.log(e);
-    reply("❌ Video note convert error");
+    console.error(e);
+    reply("*Error*");
   }
 });
