@@ -1,6 +1,28 @@
 const axios = require("axios");
 const { cmd } = require('../command');
 
+
+// Fake ChatGPT vCard
+const fakevCard = {
+    key: {
+        fromMe: false,
+        participant: "0@s.whatsapp.net",
+        remoteJid: "status@broadcast"
+    },
+    message: {
+        contactMessage: {
+            displayName: "© Mr Hiruka",
+            vcard: `BEGIN:VCARD
+VERSION:3.0
+FN:Meta
+ORG:META AI;
+TEL;type=CELL;type=VOICE;waid=94762095304:+94762095304
+END:VCARD`
+        }
+    }
+};
+
+
 // 🔐 Global session store
 global.activeIGMenus = global.activeIGMenus || new Map();
 
@@ -20,7 +42,7 @@ cmd({
 
     // ⏳ Fetching
     await conn.sendMessage(from, {
-      react: { text: "⏳", key: m.key }
+      react: { text: "📽️", key: m.key }
     });
 
     let data;
@@ -39,7 +61,7 @@ cmd({
     }
 
     if (!data?.status || !data.data?.length) {
-      return reply("⚠️ Media load wenne naha. Passe try karanna.");
+      return reply("*⚠️ Failed to retrieve Instagram file*");
     }
 
     const media = data.data[0];
@@ -52,15 +74,18 @@ cmd({
     const menuMsg = await conn.sendMessage(from, {
       image: { url: media.thumbnail },
       caption: `
-📥 *Instagram Downloader*
+📽️ *RANUMITHA-X-MD INSTAGRAM DOWNLOADER* 📽️
 
-1️⃣ HD Video
-2️⃣ Audio (MP3)
+📑 *File type:* ${media.type.toUpperCase()}
+🔗 *Link:* ${q}
 
-Reply with number 👇
-> Unlimited requests allowed
-      `
-    }, { quoted: m });
+💬 *Reply with your choice:*
+
+ 1️⃣ Video Type 🎥
+ 2️⃣ Audio only 🎶
+
+> © Powered by 𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗 🌛`
+    }, { quoted: fakevCard });
 
     // 🔐 Save session
     global.activeIGMenus.set(menuMsg.key.id, {
@@ -75,7 +100,7 @@ Reply with number 👇
 
   } catch (err) {
     console.error("IG CMD ERROR:", err);
-    reply("❌ Unexpected error");
+    reply("*Error*");
   }
 });
 
@@ -99,7 +124,7 @@ cmd({
     // ❌ INVALID OPTION CHECK
     if (text !== "1" && text !== "2") {
       return conn.sendMessage(from, {
-        text: "❌ *Invalid option!*\n\nReply with:\n1️⃣ HD Video\n2️⃣ Audio (MP3)"
+        text: "*❌ Invalid option!*"
       }, { quoted: m });
     }
 
@@ -118,13 +143,13 @@ cmd({
     if (text === "1") {
       if (media.type !== "video") {
         return conn.sendMessage(from, {
-          text: "⚠️ Video nathi post ekak"
+          text: "*⚠️ Video not found*"
         }, { quoted: m });
       }
 
       await conn.sendMessage(from, {
         video: { url: media.url },
-        caption: "✅ Video Ready"
+        caption: "✅ Your video is ready"
       }, { quoted: m });
 
     } else if (text === "2") {
@@ -141,6 +166,6 @@ cmd({
     });
 
   } catch (e) {
-    console.error("IG LISTENER ERROR:", e);
+    console.error("*Error*:", e);
   }
 });
