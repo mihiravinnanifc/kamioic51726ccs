@@ -3,11 +3,7 @@ const { cmd } = require("../command");
 
 // Fake vCard
 const fakevCard = {
-    key: {
-        fromMe: false,
-        participant: "0@s.whatsapp.net",
-        remoteJid: "status@broadcast"
-    },
+    key: { fromMe: false, participant: "0@s.whatsapp.net", remoteJid: "status@broadcast" },
     message: {
         contactMessage: {
             displayName: "© Mr Hiruka",
@@ -39,26 +35,15 @@ cmd({
 
         if (!data?.status || !data.data?.length) return reply("❌ Failed to fetch Instagram media");
 
-        const media = data.data[0];
+        const mediaList = data.data;
 
-        const caption = `
-*📥 RANUMITHA-X-MD INSTAGRAM DOWNLOADER*
+        let caption = "*📥 RANUMITHA-X-MD INSTAGRAM DOWNLOADER*\n\n";
+        mediaList.forEach((m, i) => {
+            caption += `${i + 1}️⃣ ${m.type.toUpperCase()}\n`;
+        });
+        caption += `\n🔢 Reply number to download\n> © RANUMITHA-X-MD 🌛`;
 
-*🗂️ Type:* ${media.type.toUpperCase()}
-*🔗 Link:* ${q}
-
-🔢 *Reply Below Number*
-
-1️⃣ *Video (HD)* 📽️
-2️⃣ *Audio (MP3)* 🎶
-
-> © Powered by 𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗 🌛`;
-
-        const sentMsg = await conn.sendMessage(from, {
-            image: { url: media.thumbnail },
-            caption
-        }, { quoted: fakevCard });
-
+        const sentMsg = await conn.sendMessage(from, { image: { url: mediaList[0].thumbnail }, caption }, { quoted: fakevCard });
         const messageID = sentMsg.key.id;
 
         const handler = async ({ messages }) => {
@@ -69,19 +54,22 @@ cmd({
             const isReply = msg.message.extendedTextMessage?.contextInfo?.stanzaId === messageID;
             if (!isReply) return;
 
-            // Remove listener after one use
-            conn.ev.off("messages.upsert", handler);
+            conn.ev.off("messages.upsert", handler); // Remove listener
+
+            const index = parseInt(text.trim()) - 1;
+            if (isNaN(index) || !mediaList[index]) return reply("❌ Invalid option");
+
+            const media = mediaList[index];
 
             await conn.sendMessage(from, { react: { text: "⬇️", key: msg.key } });
             await conn.sendMessage(from, { react: { text: "⬆️", key: msg.key } });
 
-            if (text.trim() === "1") {
-                if (media.type !== "video") return reply("❌ This post has no video");
+            if (media.type === "video") {
                 await conn.sendMessage(from, { video: { url: media.url }, mimetype: "video/mp4" }, { quoted: msg });
-            } else if (text.trim() === "2") {
-                await conn.sendMessage(from, { audio: { url: media.url }, mimetype: "audio/mpeg", ptt: false }, { quoted: msg });
-            } else {
-                return reply("❌ Invalid option");
+            } else if (media.type === "image") {
+                await conn.sendMessage(from, { image: { url: media.url } }, { quoted: msg });
+            } else if (media.type === "audio") {
+                await conn.sendMessage(from, { audio: { url: media.url, mimetype: "audio/mpeg", ptt: false } }, { quoted: msg });
             }
 
             await conn.sendMessage(from, { react: { text: "✔️", key: msg.key } });
