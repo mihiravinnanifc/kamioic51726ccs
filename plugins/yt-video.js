@@ -61,10 +61,10 @@ cmd({
         const ytUrl = data.url;
 
         const formats = {
-            "240p": `https://api.yupra.my.id/api/downloader/ytmp4?url=${encodeURIComponent(youtubeUrl)}&format=240`,
-            "360p": `https://api.yupra.my.id/api/downloader/ytmp4?url=${encodeURIComponent(youtubeUrl)}&format=360`,
-            "480p": `https://api.yupra.my.id/api/downloader/ytmp4?url=${encodeURIComponent(youtubeUrl)}&format=480`,
-            "720p": `https://api.yupra.my.id/api/downloader/ytmp4?url=${encodeURIComponent(youtubeUrl)}&format=720`
+            "240p": `https://www.movanest.xyz/v2/dxz-ytdl=${encodeURIComponent(youtubeUrl)}&format=240`,
+            "360p": `https://www.movanest.xyz/v2/dxz-ytdl=${encodeURIComponent(youtubeUrl)}&format=360`,
+            "480p": `https://www.movanest.xyz/v2/dxz-ytdl=${encodeURIComponent(youtubeUrl)}&format=480`,
+            "720p": `https://www.movanest.xyz/v2/dxz-ytdl=${encodeURIComponent(youtubeUrl)}&format=720`
         };
 
         const caption = `
