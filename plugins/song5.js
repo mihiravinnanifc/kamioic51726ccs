@@ -4,7 +4,7 @@ const path = require("path");
 const ffmpeg = require("fluent-ffmpeg");
 const yts = require("yt-search");
 
-// node-fetch (Node 18 සඳහා ආරක්ෂිත)
+// node-fetch (safe for Node 18)
 const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
@@ -28,7 +28,6 @@ END:VCARD`,
   },
 };
 
-// Command
 cmd(
   {
     pattern: "song5",
@@ -42,7 +41,6 @@ cmd(
 
   async (conn, mek, m, { from, reply, q }) => {
     try {
-      // Query ලබාගන්න
       let query = q?.trim();
 
       if (!query && m?.quoted) {
@@ -53,42 +51,31 @@ cmd(
       }
 
       if (!query) {
-        return reply("⚠️ කරුණාකර ගීතයේ නමක් හෝ YouTube යොමුවක් ලබාදෙන්න.");
+        return reply("⚠️ Please provide a song name or a YouTube link.");
       }
 
-      // YouTube Shorts → Regular link
       if (query.includes("youtube.com/shorts/")) {
-        const videoId = query.split("/shorts/")[1].split(/[?&]/)[0];
-        query = `https://www.youtube.com/watch?v=${videoId}`;
+        const id = query.split("/shorts/")[1].split(/[?&]/)[0];
+        query = `https://www.youtube.com/watch?v=${id}`;
       }
 
-      // යවන්නාගේ ජේඩ් (පරිශීලක අගුල සඳහා)
       const ownerJid = mek.key.participant || mek.key.remoteJid;
 
-      let video;
-      let ytUrl;
+      let video, ytUrl;
 
-      // නමක් දුන්නොත් → yt-search
       if (!query.includes("youtube.com") && !query.includes("youtu.be")) {
         const search = await yts(query);
-        if (!search.videos.length)
-          return reply("❌ ගීතය හමු නොවිණි!");
-
+        if (!search.videos.length) return reply("❌ Song not found!");
         video = search.videos[0];
         ytUrl = video.url;
-      } 
-      // YouTube යොමුවක් දුන්නොත්
-      else {
+      } else {
         ytUrl = query;
         const id = query.includes("v=")
           ? query.split("v=")[1].split("&")[0]
           : query.split("/").pop();
-
-        const info = await yts({ videoId: id });
-        video = info;
+        video = await yts({ videoId: id });
       }
 
-      // Ominisave API
       const apiUrl = `https://ominisave.vercel.app/api/ytmp3?url=${encodeURIComponent(
         ytUrl
       )}`;
@@ -97,18 +84,16 @@ cmd(
       const data = await res.json();
 
       if (!data.status || !data.result?.url)
-        return reply("❌ ගීතය බාගත කිරීමට අසමත් විය!");
+        return reply("❌ Failed to download the song!");
 
       const { url, filename } = data.result;
 
-      // Temp folder
       const tempDir = path.join(__dirname, "../temp");
       if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
 
       const title = video?.title || filename.replace(/\.mp3$/i, "");
       const thumbnail = video?.thumbnail;
 
-      // Caption
       const caption = `
 🎶 *RANUMITHA-X-MD SONG DOWNLOADER* 🎶
 
@@ -117,15 +102,14 @@ cmd(
 ⏱ *Duration:* ${video?.timestamp || "N/A"}
 🔗 *URL:* ${ytUrl}
 
-🔽 *Reply with your number choice:*
+🔽 *Reply with a number only (1 / 2 / 3):*
 
-1️⃣ Audio Type 🎵  
-2️⃣ Document Type 📁  
-3️⃣ Voice Note Type 🎤  
+1 Audio Type 🎵
+2 Document Type 📁
+3 Voice Note Type 🎤
 
 > © Powered by RANUMITHA-X-MD 🌛`;
 
-      // Initial message යවන්න
       const sentMsg = await conn.sendMessage(
         from,
         thumbnail
@@ -136,49 +120,38 @@ cmd(
 
       const messageID = sentMsg.key.id;
 
-      // Reply Handler (එක් අවස්ථාවකට පමණි)
       const handler = async (msgUpdate) => {
         try {
           const mekInfo = msgUpdate.messages[0];
           if (!mekInfo?.message) return;
 
-          // පරිශීලක අගුල - ආරම්භක යවන්නාට පමණක්
-          const senderJid = mekInfo.key.participant || mekInfo.key.remoteJid;
+          const senderJid =
+            mekInfo.key.participant || mekInfo.key.remoteJid;
           if (senderJid !== ownerJid) return;
 
-          const userText =
-            mekInfo.message.conversation ||
-            mekInfo.message.extendedTextMessage?.text;
-
-          // Reply එකක්දැයි පරීක්ෂා කරන්න
           const isReply =
             mekInfo.message?.extendedTextMessage?.contextInfo?.stanzaId ===
             messageID;
-
           if (!isReply) return;
 
-          const choice = userText?.trim();
+          const rawText =
+            mekInfo.message.conversation ||
+            mekInfo.message.extendedTextMessage?.text ||
+            "";
 
-          // Listener ඉවත් කරන්න
-          
+          const choice = rawText.trim().replace(/[^0-9]/g, "");
 
-          // Download reaction (reply එකටම)
+          // ⬇️ Download reaction
           await conn.sendMessage(from, {
             react: { text: "⬇️", key: mekInfo.key },
           });
 
-          const safeTitle = title
-            .replace(/[\\/:*?"<>|]/g, "")
-            .slice(0, 80);
-
+          const safeTitle = title.replace(/[\\/:*?"<>|]/g, "").slice(0, 80);
           const audioFileName = `${safeTitle}.mp3`;
           const tempPath = path.join(tempDir, `${Date.now()}.mp3`);
           const voicePath = path.join(tempDir, `${Date.now()}.opus`);
 
-          // **මෙතන වෙනස්කම්: reply එකටම file යැවීම**
-          
-          // Option 1: Audio
-          if (choice === "1" || choice === "1️⃣") {
+          if (choice === "1") {
             await conn.sendMessage(
               from,
               {
@@ -186,11 +159,10 @@ cmd(
                 mimetype: "audio/mpeg",
                 fileName: audioFileName,
               },
-              { quoted: mekInfo } // මෙතන වෙනස: mekInfo (reply message) ට quote කරයි
+              { quoted: mekInfo }
             );
 
-          // Option 2: Document
-          } else if (choice === "2" || choice === "2️⃣") {
+          } else if (choice === "2") {
             await conn.sendMessage(
               from,
               {
@@ -199,17 +171,14 @@ cmd(
                 fileName: audioFileName,
                 caption: title,
               },
-              { quoted: mekInfo } // මෙතන වෙනස: mekInfo (reply message) ට quote කරයි
+              { quoted: mekInfo }
             );
 
-          // Option 3: Voice Note
-          } else if (choice === "3" || choice === "3️⃣") {
-            // Download audio
+          } else if (choice === "3") {
             const audioRes = await fetch(url);
-            const audioBuffer = Buffer.from(await audioRes.arrayBuffer());
-            fs.writeFileSync(tempPath, audioBuffer);
+            const buffer = Buffer.from(await audioRes.arrayBuffer());
+            fs.writeFileSync(tempPath, buffer);
 
-            // Convert to voice note
             await new Promise((resolve, reject) => {
               ffmpeg(tempPath)
                 .audioCodec("libopus")
@@ -220,56 +189,55 @@ cmd(
                 .on("error", reject);
             });
 
-            const voiceBuffer = fs.readFileSync(voicePath);
+            const voice = fs.readFileSync(voicePath);
 
             await conn.sendMessage(
               from,
               {
-                audio: voiceBuffer,
+                audio: voice,
                 mimetype: "audio/ogg; codecs=opus",
                 ptt: true,
               },
-              { quoted: mekInfo } // මෙතන වෙනස: mekInfo (reply message) ට quote කරයි
+              { quoted: mekInfo }
             );
 
-            // Cleanup
             fs.unlinkSync(tempPath);
             fs.unlinkSync(voicePath);
 
           } else {
-            await reply("❌ *වැරදි තේරීමකි!* 1, 2, හෝ 3 පමණක් යොදන්න.");
+            await reply("❌ Invalid reply! Send only 1, 2, or 3.");
             return;
           }
 
-          // Upload reaction (reply එකටම)
+          // ⬆️ Upload reaction
           await conn.sendMessage(from, {
             react: { text: "⬆️", key: mekInfo.key },
           });
 
-          // Success reaction (reply එකටම)
+          // ✔️ Success reaction
           setTimeout(async () => {
             await conn.sendMessage(from, {
               react: { text: "✔️", key: mekInfo.key },
             });
-          }, 1000);
+          }, 800);
 
-        } catch (err) {
-          console.error("Reply handler error:", err);
-          await reply("⚠️ ප්‍රතිචාර සැකසීමේ දෝෂයක්.");
+          conn.ev.off("messages.upsert", handler);
+
+        } catch (e) {
+          console.error(e);
+          reply("⚠️ Error while processing the reply.");
         }
       };
 
-      // Listener එකතු කරන්න
       conn.ev.on("messages.upsert", handler);
 
-      // Timeout (2 මිනිත්තුවකින් ඉවත් කරන්න)
       setTimeout(() => {
         conn.ev.off("messages.upsert", handler);
       }, 120000);
 
     } catch (err) {
-      console.error("Song command error:", err);
-      reply("⚠️ ඉල්ලීම සැකසීමේදී දෝෂයක් ඇතිවිය.");
+      console.error(err);
+      reply("⚠️ An error occurred while processing the request.");
     }
   }
 );
