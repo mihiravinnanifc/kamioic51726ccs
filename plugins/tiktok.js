@@ -125,3 +125,142 @@ cmd(
     }
   }
 );
+
+
+
+cmd(
+  {
+    pattern: "tiktok2",
+    alias: ["tt2"],
+    react: "🎬",
+    desc: "Download TikTok videos (Unlimited reply)",
+    category: "download",
+    filename: __filename,
+  },
+
+  async (conn, mek, m, { from, q, reply }) => {
+    try {
+      if (!q || !q.startsWith("http")) {
+        return reply("❌ Please provide a valid TikTok URL.");
+      }
+
+      // ⏳ react
+      await conn.sendMessage(from, {
+        react: { text: "⏳", key: mek.key },
+      });
+
+      // API
+      const { data } = await axios.get(
+        `https://api.nexoracle.com/downloader/tiktok-nowm?apikey=free_key@maher_apis&url=${encodeURIComponent(
+          q
+        )}`
+      );
+
+      if (!data?.status || !data?.result) {
+        return reply("⚠️ Failed to retrieve TikTok media.");
+      }
+
+      const result = data.result;
+      const { title, url, thumbnail, duration, metrics } = result;
+
+      const caption = `
+📺 *TIKTOK DOWNLOADER*
+
+📑 *Title:* ${title || "No title"}
+⏱ *Duration:* ${duration || "N/A"}s
+👍 *Likes:* ${metrics?.digg_count?.toLocaleString() || "0"}
+💬 *Comments:* ${metrics?.comment_count?.toLocaleString() || "0"}
+🔁 *Shares:* ${metrics?.share_count?.toLocaleString() || "0"}
+📥 *Downloads:* ${metrics?.download_count?.toLocaleString() || "0"}
+
+🔽 *Reply with number (Unlimited)*
+
+1️⃣ HD Video 🔋
+2️⃣ SD Video 📱
+3️⃣ Audio (MP3) 🎵
+
+> © DARK-KNIGHT-XMD`;
+
+      const sentMsg = await conn.sendMessage(
+        from,
+        {
+          image: { url: thumbnail },
+          caption,
+        },
+        { quoted: mek }
+      );
+
+      const menuMsgId = sentMsg.key.id;
+
+      // 🔁 Unlimited reply listener
+      conn.ev.on("messages.upsert", async (update) => {
+        try {
+          const msg = update.messages[0];
+          if (!msg?.message) return;
+
+          const text =
+            msg.message.conversation ||
+            msg.message.extendedTextMessage?.text;
+
+          const repliedId =
+            msg.message.extendedTextMessage?.contextInfo?.stanzaId;
+
+          // ❗ only replies to this menu
+          if (repliedId !== menuMsgId) return;
+
+          const choice = text?.trim();
+          if (!["1", "2", "3"].includes(choice)) return;
+
+          // ⬇️ react
+          await conn.sendMessage(from, {
+            react: { text: "⬇️", key: msg.key },
+          });
+
+          let sendType;
+
+          if (choice === "1") {
+            // HD
+            sendType = {
+              video: { url },
+              caption: "📥 *Downloaded HD Quality*",
+            };
+          }
+
+          if (choice === "2") {
+            // SD (API limitation → same URL)
+            sendType = {
+              video: { url },
+              caption: "📥 *Downloaded Available Quality*",
+            };
+          }
+
+          if (choice === "3") {
+            // Audio
+            sendType = {
+              audio: { url },
+              mimetype: "audio/mp4",
+              ptt: false,
+            };
+          }
+
+          // ⬆️ react
+          await conn.sendMessage(from, {
+            react: { text: "⬆️", key: msg.key },
+          });
+
+          await conn.sendMessage(from, sendType, { quoted: msg });
+
+          // ✔️ react
+          await conn.sendMessage(from, {
+            react: { text: "✔️", key: msg.key },
+          });
+        } catch (e) {
+          console.error("TT2 reply error:", e);
+        }
+      });
+    } catch (error) {
+      console.error("TikTok2 Plugin Error:", error);
+      reply("❌ An error occurred. Try again later.");
+    }
+  }
+);
