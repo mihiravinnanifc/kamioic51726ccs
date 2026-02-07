@@ -13,25 +13,36 @@ cmd(
 
   async (conn, mek, m, { from, q, reply }) => {
     try {
+
 let url = q;
 
-// reply කරලා තියෙන message එකෙන් text ගන්න
+// reply message check
 if (!url && m.quoted) {
-  const quotedMsg = m.quoted.message;
+  if (m.quoted.text) {
+    url = m.quoted.text;
+  }
+}
+
+// still not found → deep message scan
+if (!url && m.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
+  const qm = m.message.extendedTextMessage.contextInfo.quotedMessage;
 
   url =
-    quotedMsg?.conversation ||
-    quotedMsg?.extendedTextMessage?.text ||
-    quotedMsg?.imageMessage?.caption ||
-    quotedMsg?.videoMessage?.caption ||
+    qm.conversation ||
+    qm.extendedTextMessage?.text ||
+    qm.imageMessage?.caption ||
+    qm.videoMessage?.caption ||
     "";
 }
 
-if (!url || !url.includes("tiktok.com")) {
-  return reply("❌ TikTok link ekakata reply karala `.tiktok` kiyanna nathnam link eka denna.");
+// final validation
+if (!url || !url.match(/tiktok\.com|vt\.tiktok\.com/)) {
+  return reply(
+    "❌ TikTok link ekakata reply karala `.tiktok` kiyanna nathnam link eka denna."
+  );
 }
 
-// ⏳ react
+// ⏳ react (IMPORTANT: m.key)
 await conn.sendMessage(from, {
   react: { text: "⏳", key: m.key }
 });
