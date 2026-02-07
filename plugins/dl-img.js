@@ -37,7 +37,7 @@ cmd({
 
         await reply(`🔍 Searching images for *"${query}"*...`);
 
-        const url = `https://supun-md-api-rho.vercel.app/api/search/googleImage?q=${encodeURIComponent(query)}`;
+        const url = `https://malvin-api.vercel.app/search/gimage?q=${encodeURIComponent(query)}`;
         const response = await axios.get(url);
 
         if (!response.data?.success || !response.data.results?.length) {
@@ -91,7 +91,7 @@ cmd({
 
         await reply(`🔍 Searching Images for *"${query}"*...`);
 
-        const apiUrl = `https://sadiya-tech-apis.vercel.app/search/wallpaperscraft?q=${encodeURIComponent(query)}&apikey=YOU_API_KEY`;
+        const apiUrl = `https://www.movanest.xyz/v2/googleimage?query=${encodeURIComponent(query)}&apikey=YOU_API_KEY`;
         const response = await axios.get(apiUrl);
 
         if (!response.data?.status || !response.data?.result?.images?.length) {
