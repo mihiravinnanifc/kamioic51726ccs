@@ -2,7 +2,7 @@ const { cmd } = require('../command');
 const axios = require('axios');
 
 // ✅ Fake ChatGPT vCard
-const fakevCard = {
+const FakeVCard = {
     key: {
         fromMe: false,
         participant: "0@s.whatsapp.net",
@@ -54,7 +54,11 @@ ${data.result}
 🕒 *Response Time:* ${data.response_time}
         `.trim();
 
-        await reply(responseMsg);
+        await conn.sendMessage(
+      from,
+      { text: responseMsg },
+      { quoted: FakeVCard }
+    );
         await react("✅");
     } catch (e) {
         console.error("Error in AI command:", e);
