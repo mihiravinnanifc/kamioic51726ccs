@@ -1,7 +1,7 @@
 const { cmd } = require('../command');
 const { getBuffer } = require('../lib/functions');
 
-// Fake ChatGPT vCard
+// Fake vCard
 const fakevCard = {
     key: {
         fromMe: false,
@@ -23,9 +23,9 @@ END:VCARD`
 
 cmd({
   pattern: "gid",
-  alias: ["groupid", "grouplinkinfo"],
+  alias: ["groupid"],
   react: "🖼️",
-  desc: "Get Group info from invite link with profile picture",
+  desc: "Get Group info from invite link",
   category: "whatsapp",
   filename: __filename
 }, async (conn, mek, m, { from, q, reply }) => {
@@ -33,57 +33,53 @@ cmd({
   try {
 
     if (!q) {
-      return reply("*Please provide a WhatsApp Group link.*\n\nExample:\n.gid https://chat.whatsapp.com/xxxxxxxx");
+      return reply("Provide group link.\nExample:\n.gid https://chat.whatsapp.com/xxxx");
     }
 
-    // Extract invite code
     const match = q.match(/chat\.whatsapp\.com\/([\w-]+)/);
-
-    if (!match) {
-      return reply("⚠️ *Invalid group link format.*\n\nMake sure it looks like:\nhttps://chat.whatsapp.com/xxxxxxxx");
-    }
+    if (!match) return reply("Invalid group link.");
 
     const inviteCode = match[1];
 
-    // Fetch group invite metadata
-    let metadata;
-    try {
-      metadata = await conn.groupGetInviteInfo(inviteCode);
-    } catch {
-      return reply("*❌ Failed to fetch group info. The link may be invalid or expired.*");
+    // Get invite info
+    const inviteInfo = await conn.groupGetInviteInfo(inviteCode);
+
+    if (!inviteInfo?.id) {
+      return reply("Group not found.");
     }
 
-    if (!metadata?.id) {
-      return reply("❌ Group not found or inaccessible.");
-    }
+    const groupJid = inviteInfo.id;
 
-    const infoText = `*— 乂 Group Link Info —*\n\n` +
-      `🆔 *Group ID:* ${metadata.id}\n` +
-      `📛 *Name:* ${metadata.subject}\n` +
-      `📝 *Description:* ${metadata.desc || "No description"}\n` +
-      `👑 *Owner:* ${metadata.owner || "Unknown"}\n` +
-      `👥 *Members:* ${metadata.size || "Unknown"}\n` +
-      `📅 *Created:* ${metadata.creation ? new Date(metadata.creation * 1000).toLocaleString() : "Unknown"}\n\n` +
-      `> © Powerd by 𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗 🌛`;
+    // 🔥 IMPORTANT: Get full metadata using JID
+    const metadata = await conn.groupMetadata(groupJid);
 
-    // === Get Group Profile Picture using Buffer ===
-    let groupPP;
+    const text = `*「 Group Link Info 」*\n
+🔥 Name: ${metadata.subject}
+🆔 ID: ${metadata.id}
+👥 Members: ${metadata.size}
+👑 Owner: ${metadata.owner || "Unknown"}
+📃 Description: ${metadata.desc || "No description"}
+📅 Created: ${metadata.creation ? new Date(metadata.creation * 1000).toLocaleString() : "Unknown"}
 
+> © Powered by 𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗 🌛`;
+
+    // 🔥 Get profile picture (NOW WORKS)
+    let pp;
     try {
-      const ppUrl = await conn.profilePictureUrl(metadata.id, "image");
-      groupPP = await getBuffer(ppUrl);
+      const ppUrl = await conn.profilePictureUrl(groupJid, "image");
+      pp = await getBuffer(ppUrl);
     } catch {
-      groupPP = await getBuffer("https://i.ibb.co/KhYC4FY/1221bc0bdd2354b42b293317ff2adbcf-icon.png");
+      pp = await getBuffer("https://i.ibb.co/KhYC4FY/1221bc0bdd2354b42b293317ff2adbcf-icon.png");
     }
 
     await conn.sendMessage(from, {
-      image: groupPP,
-      caption: infoText
+      image: pp,
+      caption: text
     }, { quoted: fakevCard });
 
-  } catch (error) {
-    console.error("❌ Error in gid plugin:", error);
-    reply("*Error fetching group link info*");
+  } catch (err) {
+    console.log(err);
+    reply("Error fetching group info.");
   }
 
 });
