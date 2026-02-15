@@ -32,7 +32,7 @@ cmd({
   try {
 
     if (!q) {
-      return reply("*Please provide a WhatsApp Channel link.*\n\n*Example:* .cinfo https://chat.whatsapp.com/xxxx");
+      return reply("*Please provide a WhatsApp Channel link.*\n\n*Example:* .gid https://chat.whatsapp.com/xxxx");
     }
 
     const match = q.match(/chat\.whatsapp\.com\/([\w-]+)/);
