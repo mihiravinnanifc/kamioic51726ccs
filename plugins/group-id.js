@@ -21,46 +21,57 @@ END:VCARD`
 };
 
 cmd({
-  pattern: "ginfo",
-  alias: ["groupinfo", "gid"],
-  react: "👥",
-  desc: "Get WhatsApp Group info",
+  pattern: "gid",
+  alias: ["groupid", "grouplinkinfo"],
+  react: "🔎",
+  desc: "Get Group info from invite link",
   category: "whatsapp",
   filename: __filename
 }, async (conn, mek, m, {
   from,
-  isGroup,
+  q,
   reply
 }) => {
 
   try {
 
-    if (!isGroup) {
-      return reply("❌ *This command can only be used in a group.*");
+    if (!q) {
+      return reply("*Please provide a WhatsApp Group link.*\n\nExample:\n.gid https://chat.whatsapp.com/xxxxxxxx");
     }
 
-    // Get Group Metadata
-    const metadata = await conn.groupMetadata(from);
+    // Extract Invite Code
+    const match = q.match(/chat\.whatsapp\.com\/([\w-]+)/);
 
-    if (!metadata) {
-      return reply("❌ Failed to fetch group metadata.");
+    if (!match) {
+      return reply("⚠️ *Invalid group link format.*\n\nMake sure it looks like:\nhttps://chat.whatsapp.com/xxxxxxxx");
     }
 
-    const groupInfo = `*— 乂 Group Info —*\n\n` +
+    const inviteCode = match[1];
+
+    let metadata;
+    try {
+      metadata = await conn.groupGetInviteInfo(inviteCode);
+    } catch (e) {
+      return reply("*❌ Failed to fetch group info. The link may be invalid or expired.*");
+    }
+
+    if (!metadata || !metadata.id) {
+      return reply("❌ Group not found or inaccessible.");
+    }
+
+    const infoText = `*— 乂 Group Link Info —*\n\n` +
       `🆔 *Group ID:* ${metadata.id}\n` +
       `📛 *Name:* ${metadata.subject}\n` +
       `📝 *Description:* ${metadata.desc || "No description"}\n` +
       `👑 *Owner:* ${metadata.owner || "Unknown"}\n` +
-      `👥 *Members:* ${metadata.participants.length}\n` +
+      `👥 *Members:* ${metadata.size || "Unknown"}\n` +
       `📅 *Created:* ${metadata.creation ? new Date(metadata.creation * 1000).toLocaleString("id-ID") : "Unknown"}\n\n` +
-      `🔒 *Announce:* ${metadata.announce ? "Only Admins Can Send Messages" : "All Members Can Send Messages"}\n` +
-      `✏️ *Edit Info:* ${metadata.restrict ? "Only Admins Can Edit Info" : "All Members Can Edit Info"}\n\n` +
       `> © Powerd by 𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗 🌛`;
 
     // Send with group profile picture if available
     let pp;
     try {
-      pp = await conn.profilePictureUrl(from, "image");
+      pp = await conn.profilePictureUrl(metadata.id, "image");
     } catch {
       pp = null;
     }
@@ -68,15 +79,15 @@ cmd({
     if (pp) {
       await conn.sendMessage(from, {
         image: { url: pp },
-        caption: groupInfo
+        caption: infoText
       }, { quoted: fakevCard });
     } else {
-      await reply(groupInfo);
+      await reply(infoText);
     }
 
   } catch (error) {
-    console.error("❌ Error in ginfo plugin:", error);
-    reply("*Error fetching group info*");
+    console.error("❌ Error in gid plugin:", error);
+    reply("*Error fetching group link info*");
   }
 
 });
