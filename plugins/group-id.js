@@ -46,12 +46,12 @@ cmd({
     if (!inviteInfo?.id) return reply("Group not found.");
 
     const text = `*「 Group Link Info 」*\n
-🔥 Name: ${inviteInfo.subject}
-🆔 ID: ${inviteInfo.id}
-👥 Members: ${inviteInfo.size}
-👑 Owner: ${inviteInfo.owner || "Unknown"}
-📃 Description: ${inviteInfo.desc || "No description"}
-📅 Created: ${inviteInfo.creation ? new Date(inviteInfo.creation * 1000).toLocaleString() : "Unknown"}
+🔥 \`Group Name:\` ${inviteInfo.subject}
+🆔 \`Group ID:\` ${inviteInfo.id}
+👥 \`Participant Count:\` ${inviteInfo.size}
+👑 \`Group Creator:\` ${inviteInfo.owner || "Unknown"}
+📃 \`Group Description:\` ${inviteInfo.desc || "No description"}
+📅 \`Group Created:\´ ${inviteInfo.creation ? new Date(inviteInfo.creation * 1000).toLocaleString() : "Unknown"}
 
 > © Powered by 𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗 🌛`;
 
