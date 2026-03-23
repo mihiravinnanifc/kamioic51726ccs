@@ -38,7 +38,7 @@ cmd({
 
         // Call API
         const res = await axios.get(
-            `https://ranumitha-x-md-pair.onrender.com/code?number=${cleanNumber}`
+            `https://ranumitha-x-md-pair-production.up.railway.app/pair/code?number=${cleanNumber}`
         );
 
         const code = res.data?.code;
