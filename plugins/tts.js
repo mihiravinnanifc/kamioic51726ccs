@@ -309,7 +309,7 @@ async (conn, mek, m, { from, q, reply }) => {
 // ═══════════════════════════════════════════
 cmd({
   pattern:  'sinhala',
-  alias:    ['tts3', 'sitts', 'sivoice'],
+  alias:    ['ttssin', 'sitts', 'sivoice'],
   desc:     'සිංහල Text to Voice Note',
   category: 'tools',
   react:    '🔊',
@@ -336,7 +336,7 @@ async (conn, mek, m, { from, q, reply }) => {
 //   .tts2 — English TTS fast
 // ═══════════════════════════════════════════
 cmd({
-  pattern:  'tts2',
+  pattern:  'ttsen',
   alias:    ['entts', 'envoice'],
   desc:     'English Text to Voice Note',
   category: 'tools',
