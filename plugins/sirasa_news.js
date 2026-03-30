@@ -1,6 +1,27 @@
 const axios = require('axios');
 const { cmd } = require('../command');
 
+
+// Fake vCard
+const fakevCard = {
+    key: {
+        fromMe: false,
+        participant: "0@s.whatsapp.net",
+        remoteJid: "status@broadcast"
+    },
+    message: {
+        contactMessage: {
+            displayName: "© Mr Hiruka",
+            vcard: `BEGIN:VCARD
+VERSION:3.0
+FN:Meta
+ORG:META AI;
+TEL;type=CELL;type=VOICE;waid=94762095304:+94762095304
+END:VCARD`
+        }
+    }
+};
+
 cmd({
     pattern: "news3",
     alias: ["sirasa","sirasanews"],
@@ -42,7 +63,7 @@ ${news.desc}
                     caption: message 
                 });
             } else {
-                await conn.sendMessage(from, { text: message });
+                await conn.sendMessage(from, { text: message }, { quoted: fakevCard } );
             }
 
             await new Promise(res => setTimeout(res, 500)); // small delay to avoid spam block
