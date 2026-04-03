@@ -51,7 +51,7 @@ async (robin, mek, m, {
 ┃ 🖥️ *HOST:* ${os.hostname()}
 ╰━━━━━━━━━━━━━━━━━━━━━╯
 
-> *Powered by WHITESHADOW MD* 🚀`;
+> © Powerd by 𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗 🌛`;
 
         // Sticker (optional)
         let quotedSticker = null;
@@ -73,7 +73,7 @@ async (robin, mek, m, {
                             isForwarded: true,
                             forwardedNewsletterMessageInfo: {
                                 newsletterJid: '120363317972190466@newsletter',
-                                newsletterName: 'WHITESHADOW MD',
+                                newsletterName: 'RANUMITHA X MD',
                                 serverMessageId: 143
                             }
                         }
