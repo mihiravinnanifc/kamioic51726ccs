@@ -49,7 +49,7 @@ cmd({
   use: ".groupstatus <text> or reply with image/video + caption",
   react: "🟢",
   filename: __filename
-}, async (conn, mek, m, { from, reply, q, mime, isMedia }) => {
+}, async (conn, mek, m, { from, reply, q, mime, isOwner ,isMedia }) => {
   try {
     if (!m.isGroup) return reply("⚠️ This command only works in groups!");
     if (!m.isOwner) return reply("*Owner only*");
