@@ -5,9 +5,6 @@ const fs = require('fs');
 
 /**
  * Send Group Status (with optional media + auto expire)
- * @param {import('@whiskeysockets/baileys').WASocket} client
- * @param {string} jid Group JID
- * @param {import('@whiskeysockets/baileys').AnyMessageContent} content
  */
 async function groupStatus(client, jid, content) {
   try {
@@ -20,6 +17,7 @@ async function groupStatus(client, jid, content) {
     });
 
     const messageSecret = crypto.randomBytes(32);
+
     const m = baileys.generateWAMessageFromContent(
       jid,
       {
@@ -36,6 +34,7 @@ async function groupStatus(client, jid, content) {
 
     await client.relayMessage(jid, m.message, { messageId: m.key.id });
     return m;
+
   } catch (err) {
     console.error("❌ GroupStatus Error:", err);
   }
@@ -49,14 +48,21 @@ cmd({
   use: ".groupstatus <text> or reply with image/video + caption",
   react: "🟢",
   filename: __filename
-}, async (conn, mek, m, { from, reply, q, mime, isOwner ,isMedia }) => {
-  try {
-    if (!m.isGroup) return reply("⚠️ This command only works in groups!");
-    if (!m.isOwner) return reply("*Owner only*");
+},
+async (conn, mek, m, { from, reply, q, mime, isOwner, isMedia }) => {
 
-    // Check if user replied to media
+  try {
+    // ❗ Group check
+    if (!m.isGroup) return reply("⚠️ This command only works in groups!");
+
+    // ✅ FIXED OWNER CHECK
+    if (!isOwner) return reply("*Owner only*");
+
     let content = {};
+
+    // 📸 Media handling
     if ((isMedia && /image|video/.test(mime)) || m.quoted?.mimetype) {
+
       const quoted = m.quoted ? m.quoted : m;
       const buffer = await quoted.download();
       const type = quoted.mimetype.split("/")[0];
@@ -64,27 +70,33 @@ cmd({
       if (type === "image") {
         content = {
           image: buffer,
-          caption: q || "📸 Group status  Updated by WHITESHADOW-MD",
+          caption: q || "📸 Group status updated",
         };
       } else if (type === "video") {
         content = {
           video: buffer,
-          caption: q || "🎬 Group Video Updated by RANUMITHA-X-MD",
+          caption: q || "🎬 Group video status updated",
         };
       }
+
     } else {
+      // 📝 Text status
       if (!q) return reply("📜 Use: .groupstatus <text>");
+
       content = {
         text: q,
         backgroundColor: "#25D366",
       };
     }
 
-    // Send group status
+    // 🚀 Send status
     const statusMsg = await groupStatus(conn, from, content);
-    reply("✅ Group status posted successfully! (expires in 24h)");
 
-    // Auto delete after 24 hours (simulate status expire)
+    if (!statusMsg) return reply("❌ Failed to send group status.");
+
+    await reply("✅ Group status posted successfully! (expires in 24h)");
+
+    // 🕒 Auto delete after 24h
     setTimeout(async () => {
       try {
         await conn.sendMessage(from, { delete: statusMsg.key });
@@ -92,7 +104,8 @@ cmd({
       } catch (e) {
         console.error("⚠️ Auto-delete failed:", e);
       }
-    }, 24 * 60 * 60 * 1000); // 24 hours
+    }, 24 * 60 * 60 * 1000);
+
   } catch (err) {
     console.error(err);
     reply("❌ Failed to send group status.");
