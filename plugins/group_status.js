@@ -52,7 +52,7 @@ cmd({
 }, async (conn, mek, m, { from, reply, q, mime, isMedia }) => {
   try {
     if (!m.isGroup) return reply("⚠️ This command only works in groups!");
-    if (!m.isOwner) return reply("*Owner on*")
+    if (!m.isOwner) return reply("*Owner only*");
 
     // Check if user replied to media
     let content = {};
