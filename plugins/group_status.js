@@ -56,7 +56,7 @@ async (conn, mek, m, { from, reply, q, mime, isOwner, isMedia }) => {
     if (!m.isGroup) return reply("⚠️ This command only works in groups!");
 
     // ✅ FIXED OWNER CHECK
-    if (!isOwner) return reply("*Owner only*");
+    if (!isOwner) return reply("🚫 *Owner Only Command!*");
 
     let content = {};
 
