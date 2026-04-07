@@ -627,7 +627,7 @@ cmd({
 // 10. TIME IN ANY COUNTRY
 cmd({
     pattern: "timein",
-    alias: ["timeeka"],
+    alias: ["timeeka" ,"ctime" ,"countrytime"],
     react: "🕒",
     desc: "Time in any country",
     category: "utility"
