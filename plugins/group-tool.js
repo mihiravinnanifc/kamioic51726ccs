@@ -12,7 +12,7 @@ cmd({
     filename: __filename,
 }, 
 async (conn, mek, m, {
-    from, groupMetadata, groupAdmins, isBotAdmins, senderNumber, reply, isGroup
+    from, groupMetadata, groupAdmins, isBotAdmins, isOwner, senderNumber, reply, isGroup
 }) => {
     try {
         // Check if the command is used in a group
@@ -26,8 +26,8 @@ async (conn, mek, m, {
             return reply("Only the bot owner can use this command.");
         }
 
-        if (!isBotAdmins) {
-            return reply("I need to be an admin to execute this command.");
+        if (!isOwner) {
+            return reply("*🚫 Owner only command!*");
         }
 
         const allParticipants = groupMetadata.participants;
