@@ -1,218 +1,58 @@
 const { cmd } = require('../command');
 
-// 🌍 FULL 195 COUNTRY LIST
-const countryList = [
-{ name:"Afghanistan",zone:"Asia/Kabul"},
-{ name:"Albania",zone:"Europe/Tirane"},
-{ name:"Algeria",zone:"Africa/Algiers"},
-{ name:"Andorra",zone:"Europe/Andorra"},
-{ name:"Angola",zone:"Africa/Luanda"},
-{ name:"Antigua and Barbuda",zone:"America/Antigua"},
-{ name:"Argentina",zone:"America/Argentina/Buenos_Aires"},
-{ name:"Armenia",zone:"Asia/Yerevan"},
-{ name:"Australia",zone:"Australia/Sydney"},
-{ name:"Austria",zone:"Europe/Vienna"},
-{ name:"Azerbaijan",zone:"Asia/Baku"},
-{ name:"Bahamas",zone:"America/Nassau"},
-{ name:"Bahrain",zone:"Asia/Bahrain"},
-{ name:"Bangladesh",zone:"Asia/Dhaka"},
-{ name:"Barbados",zone:"America/Barbados"},
-{ name:"Belarus",zone:"Europe/Minsk"},
-{ name:"Belgium",zone:"Europe/Brussels"},
-{ name:"Belize",zone:"America/Belize"},
-{ name:"Benin",zone:"Africa/Porto-Novo"},
-{ name:"Bhutan",zone:"Asia/Thimphu"},
-{ name:"Bolivia",zone:"America/La_Paz"},
-{ name:"Bosnia and Herzegovina",zone:"Europe/Sarajevo"},
-{ name:"Botswana",zone:"Africa/Gaborone"},
-{ name:"Brazil",zone:"America/Sao_Paulo"},
-{ name:"Brunei",zone:"Asia/Brunei"},
-{ name:"Bulgaria",zone:"Europe/Sofia"},
-{ name:"Burkina Faso",zone:"Africa/Ouagadougou"},
-{ name:"Burundi",zone:"Africa/Bujumbura"},
-{ name:"Cabo Verde",zone:"Atlantic/Cape_Verde"},
-{ name:"Cambodia",zone:"Asia/Phnom_Penh"},
-{ name:"Cameroon",zone:"Africa/Douala"},
-{ name:"Canada",zone:"America/Toronto"},
-{ name:"Central African Republic",zone:"Africa/Bangui"},
-{ name:"Chad",zone:"Africa/Ndjamena"},
-{ name:"Chile",zone:"America/Santiago"},
-{ name:"China",zone:"Asia/Shanghai"},
-{ name:"Colombia",zone:"America/Bogota"},
-{ name:"Comoros",zone:"Indian/Comoro"},
-{ name:"DR Congo",zone:"Africa/Kinshasa"},
-{ name:"Republic of the Congo",zone:"Africa/Brazzaville"},
-{ name:"Costa Rica",zone:"America/Costa_Rica"},
-{ name:"Croatia",zone:"Europe/Zagreb"},
-{ name:"Cuba",zone:"America/Havana"},
-{ name:"Cyprus",zone:"Asia/Nicosia"},
-{ name:"Czech Republic",zone:"Europe/Prague"},
-{ name:"Denmark",zone:"Europe/Copenhagen"},
-{ name:"Djibouti",zone:"Africa/Djibouti"},
-{ name:"Dominica",zone:"America/Dominica"},
-{ name:"Dominican Republic",zone:"America/Santo_Domingo"},
-{ name:"Ecuador",zone:"America/Guayaquil"},
-{ name:"Egypt",zone:"Africa/Cairo"},
-{ name:"El Salvador",zone:"America/El_Salvador"},
-{ name:"Equatorial Guinea",zone:"Africa/Malabo"},
-{ name:"Eritrea",zone:"Africa/Asmara"},
-{ name:"Estonia",zone:"Europe/Tallinn"},
-{ name:"Eswatini",zone:"Africa/Mbabane"},
-{ name:"Ethiopia",zone:"Africa/Addis_Ababa"},
-{ name:"Fiji",zone:"Pacific/Fiji"},
-{ name:"Finland",zone:"Europe/Helsinki"},
-{ name:"France",zone:"Europe/Paris"},
-{ name:"Gabon",zone:"Africa/Libreville"},
-{ name:"Gambia",zone:"Africa/Banjul"},
-{ name:"Georgia",zone:"Asia/Tbilisi"},
-{ name:"Germany",zone:"Europe/Berlin"},
-{ name:"Ghana",zone:"Africa/Accra"},
-{ name:"Greece",zone:"Europe/Athens"},
-{ name:"Grenada",zone:"America/Grenada"},
-{ name:"Guatemala",zone:"America/Guatemala"},
-{ name:"Guinea",zone:"Africa/Conakry"},
-{ name:"Guinea-Bissau",zone:"Africa/Bissau"},
-{ name:"Guyana",zone:"America/Guyana"},
-{ name:"Haiti",zone:"America/Port-au-Prince"},
-{ name:"Honduras",zone:"America/Tegucigalpa"},
-{ name:"Hungary",zone:"Europe/Budapest"},
-{ name:"Iceland",zone:"Atlantic/Reykjavik"},
-{ name:"India",zone:"Asia/Kolkata"},
-{ name:"Indonesia",zone:"Asia/Jakarta"},
-{ name:"Iran",zone:"Asia/Tehran"},
-{ name:"Iraq",zone:"Asia/Baghdad"},
-{ name:"Ireland",zone:"Europe/Dublin"},
-{ name:"Israel",zone:"Asia/Jerusalem"},
-{ name:"Italy",zone:"Europe/Rome"},
-{ name:"Jamaica",zone:"America/Jamaica"},
-{ name:"Japan",zone:"Asia/Tokyo"},
-{ name:"Jordan",zone:"Asia/Amman"},
-{ name:"Kazakhstan",zone:"Asia/Almaty"},
-{ name:"Kenya",zone:"Africa/Nairobi"},
-{ name:"Kiribati",zone:"Pacific/Tarawa"},
-{ name:"Kuwait",zone:"Asia/Kuwait"},
-{ name:"Kyrgyzstan",zone:"Asia/Bishkek"},
-{ name:"Laos",zone:"Asia/Vientiane"},
-{ name:"Latvia",zone:"Europe/Riga"},
-{ name:"Lebanon",zone:"Asia/Beirut"},
-{ name:"Lesotho",zone:"Africa/Maseru"},
-{ name:"Liberia",zone:"Africa/Monrovia"},
-{ name:"Libya",zone:"Africa/Tripoli"},
-{ name:"Liechtenstein",zone:"Europe/Vaduz"},
-{ name:"Lithuania",zone:"Europe/Vilnius"},
-{ name:"Luxembourg",zone:"Europe/Luxembourg"},
-{ name:"Madagascar",zone:"Africa/Antananarivo"},
-{ name:"Malawi",zone:"Africa/Blantyre"},
-{ name:"Malaysia",zone:"Asia/Kuala_Lumpur"},
-{ name:"Maldives",zone:"Indian/Maldives"},
-{ name:"Mali",zone:"Africa/Bamako"},
-{ name:"Malta",zone:"Europe/Malta"},
-{ name:"Marshall Islands",zone:"Pacific/Majuro"},
-{ name:"Mauritania",zone:"Africa/Nouakchott"},
-{ name:"Mauritius",zone:"Indian/Mauritius"},
-{ name:"Mexico",zone:"America/Mexico_City"},
-{ name:"Micronesia",zone:"Pacific/Chuuk"},
-{ name:"Moldova",zone:"Europe/Chisinau"},
-{ name:"Monaco",zone:"Europe/Monaco"},
-{ name:"Mongolia",zone:"Asia/Ulaanbaatar"},
-{ name:"Montenegro",zone:"Europe/Podgorica"},
-{ name:"Morocco",zone:"Africa/Casablanca"},
-{ name:"Mozambique",zone:"Africa/Maputo"},
-{ name:"Myanmar",zone:"Asia/Yangon"},
-{ name:"Namibia",zone:"Africa/Windhoek"},
-{ name:"Nauru",zone:"Pacific/Nauru"},
-{ name:"Nepal",zone:"Asia/Kathmandu"},
-{ name:"Netherlands",zone:"Europe/Amsterdam"},
-{ name:"New Zealand",zone:"Pacific/Auckland"},
-{ name:"Nicaragua",zone:"America/Managua"},
-{ name:"Niger",zone:"Africa/Niamey"},
-{ name:"Nigeria",zone:"Africa/Lagos"},
-{ name:"North Korea",zone:"Asia/Pyongyang"},
-{ name:"North Macedonia",zone:"Europe/Skopje"},
-{ name:"Norway",zone:"Europe/Oslo"},
-{ name:"Oman",zone:"Asia/Muscat"},
-{ name:"Pakistan",zone:"Asia/Karachi"},
-{ name:"Palau",zone:"Pacific/Palau"},
-{ name:"Panama",zone:"America/Panama"},
-{ name:"Papua New Guinea",zone:"Pacific/Port_Moresby"},
-{ name:"Paraguay",zone:"America/Asuncion"},
-{ name:"Peru",zone:"America/Lima"},
-{ name:"Philippines",zone:"Asia/Manila"},
-{ name:"Poland",zone:"Europe/Warsaw"},
-{ name:"Portugal",zone:"Europe/Lisbon"},
-{ name:"Qatar",zone:"Asia/Qatar"},
-{ name:"Romania",zone:"Europe/Bucharest"},
-{ name:"Russia",zone:"Europe/Moscow"},
-{ name:"Rwanda",zone:"Africa/Kigali"},
-{ name:"Saint Kitts and Nevis",zone:"America/St_Kitts"},
-{ name:"Saint Lucia",zone:"America/St_Lucia"},
-{ name:"St Vincent",zone:"America/St_Vincent"},
-{ name:"Samoa",zone:"Pacific/Apia"},
-{ name:"San Marino",zone:"Europe/San_Marino"},
-{ name:"Sao Tome",zone:"Africa/Sao_Tome"},
-{ name:"Saudi Arabia",zone:"Asia/Riyadh"},
-{ name:"Senegal",zone:"Africa/Dakar"},
-{ name:"Serbia",zone:"Europe/Belgrade"},
-{ name:"Seychelles",zone:"Indian/Mahe"},
-{ name:"Sierra Leone",zone:"Africa/Freetown"},
-{ name:"Singapore",zone:"Asia/Singapore"},
-{ name:"Slovakia",zone:"Europe/Bratislava"},
-{ name:"Slovenia",zone:"Europe/Ljubljana"},
-{ name:"Solomon Islands",zone:"Pacific/Guadalcanal"},
-{ name:"Somalia",zone:"Africa/Mogadishu"},
-{ name:"South Africa",zone:"Africa/Johannesburg"},
-{ name:"South Korea",zone:"Asia/Seoul"},
-{ name:"South Sudan",zone:"Africa/Juba"},
-{ name:"Spain",zone:"Europe/Madrid"},
-{ name:"Sri Lanka",zone:"Asia/Colombo"},
-{ name:"Sudan",zone:"Africa/Khartoum"},
-{ name:"Suriname",zone:"America/Paramaribo"},
-{ name:"Sweden",zone:"Europe/Stockholm"},
-{ name:"Switzerland",zone:"Europe/Zurich"},
-{ name:"Syria",zone:"Asia/Damascus"},
-{ name:"Tajikistan",zone:"Asia/Dushanbe"},
-{ name:"Tanzania",zone:"Africa/Dar_es_Salaam"},
-{ name:"Thailand",zone:"Asia/Bangkok"},
-{ name:"Timor-Leste",zone:"Asia/Dili"},
-{ name:"Togo",zone:"Africa/Lome"},
-{ name:"Tonga",zone:"Pacific/Tongatapu"},
-{ name:"Trinidad and Tobago",zone:"America/Port_of_Spain"},
-{ name:"Tunisia",zone:"Africa/Tunis"},
-{ name:"Turkey",zone:"Europe/Istanbul"},
-{ name:"Turkmenistan",zone:"Asia/Ashgabat"},
-{ name:"Tuvalu",zone:"Pacific/Funafuti"},
-{ name:"Uganda",zone:"Africa/Kampala"},
-{ name:"Ukraine",zone:"Europe/Kyiv"},
-{ name:"UAE",zone:"Asia/Dubai"},
-{ name:"United Kingdom",zone:"Europe/London"},
-{ name:"United States",zone:"America/New_York"},
-{ name:"Uruguay",zone:"America/Montevideo"},
-{ name:"Uzbekistan",zone:"Asia/Tashkent"},
-{ name:"Vanuatu",zone:"Pacific/Efate"},
-{ name:"Vatican City",zone:"Europe/Vatican"},
-{ name:"Venezuela",zone:"America/Caracas"},
-{ name:"Vietnam",zone:"Asia/Ho_Chi_Minh"},
-{ name:"Yemen",zone:"Asia/Aden"},
-{ name:"Zambia",zone:"Africa/Lusaka"},
-{ name:"Zimbabwe",zone:"Africa/Harare"},
-{ name:"Palestine",zone:"Asia/Gaza"}
-];
+// 🌍 Countries grouped (SIDE MENU feel)
+const regions = {
+    "🌏 Asia": [
+        { name:"Sri Lanka",zone:"Asia/Colombo"},
+        { name:"India",zone:"Asia/Kolkata"},
+        { name:"Japan",zone:"Asia/Tokyo"},
+        { name:"China",zone:"Asia/Shanghai"},
+        { name:"UAE",zone:"Asia/Dubai"}
+    ],
+    "🌍 Europe": [
+        { name:"United Kingdom",zone:"Europe/London"},
+        { name:"Germany",zone:"Europe/Berlin"},
+        { name:"France",zone:"Europe/Paris"},
+        { name:"Italy",zone:"Europe/Rome"}
+    ],
+    "🌎 America": [
+        { name:"United States",zone:"America/New_York"},
+        { name:"Canada",zone:"America/Toronto"},
+        { name:"Brazil",zone:"America/Sao_Paulo"}
+    ],
+    "🌍 Africa": [
+        { name:"South Africa",zone:"Africa/Johannesburg"},
+        { name:"Nigeria",zone:"Africa/Lagos"},
+        { name:"Egypt",zone:"Africa/Cairo"}
+    ]
+};
+
+// 🔍 find country
+function findCountry(name){
+    for (let region in regions){
+        const found = regions[region].find(c =>
+            c.name.toLowerCase() === name.toLowerCase()
+        );
+        if(found) return found;
+    }
+    return null;
+}
 
 // 🕒 CMD
 cmd({
-pattern:"timec",
-desc:"World time menu",
+pattern:"time",
+desc:"Side menu world clock",
 category:"utility",
 react:"🌍",
 filename:__filename
 },
 async(conn,mek,m,{args,reply})=>{
 
-// 🔍 SEARCH MODE
+// 👉 SELECTED COUNTRY
 if(args[0]){
-const input=args.join(" ").toLowerCase();
+const input=args.join(" ");
+const country=findCountry(input);
 
-const country=countryList.find(c=>c.name.toLowerCase().includes(input));
 if(!country) return reply("❌ Country not found!");
 
 const now=new Date();
@@ -220,44 +60,56 @@ const now=new Date();
 const date=now.toLocaleDateString("en-GB",{timeZone:country.zone,weekday:"long",year:"numeric",month:"long",day:"numeric"});
 const time=now.toLocaleTimeString("en-GB",{timeZone:country.zone,hour:"2-digit",minute:"2-digit",second:"2-digit"});
 
-const msg=`
+return reply(`
 ╭───〔 🌍 WORLD CLOCK 〕───╮
 │
-│ 📍 Country : *${country.name}*
-│ 📅 Date    : ${date}
-│ 🕒 Time    : ${time}
+│ 📍 ${country.name}
+│ 📅 ${date}
+│ 🕒 ${time}
 │
 ╰────────────────────╯
-`;
-
-await conn.sendMessage(m.chat,{react:{text:"⏱️",key:mek.key}});
-return reply(msg);
+`);
 }
 
-// 📑 MENU MODE
-let sections = [];
-let chunkSize = 50;
+// 👉 MAIN MENU (SIDE STYLE)
+const buttons = Object.keys(regions).map(r => ({
+buttonId: `.timeregion ${r}`,
+buttonText: { displayText: r },
+type: 1
+}));
 
-for (let i = 0; i < countryList.length; i += chunkSize) {
-    let chunk = countryList.slice(i, i + chunkSize);
+return conn.sendMessage(m.chat,{
+text:"🌍 *Select Region*",
+footer:"Time Bot",
+buttons: buttons,
+headerType:1
+},{quoted:mek});
 
-    sections.push({
-        title: `Countries ${i + 1} - ${i + chunk.length}`,
-        rows: chunk.map(c => ({
-            title: c.name,
-            rowId: `.time ${c.name}`
-        }))
-    });
-}
+});
 
-const listMessage = {
-    text: "🌍 *WORLD CLOCK MENU*\n\nSelect a country 👇",
-    footer: "Time Bot",
-    title: "🌎 All Countries",
-    buttonText: "📑 Select Country",
-    sections
-};
+// 🌍 REGION HANDLER
+cmd({
+pattern:"timeregion",
+category:"utility"
+},
+async(conn,mek,m,{args,reply})=>{
 
-return await conn.sendMessage(m.chat, listMessage, { quoted: mek });
+const regionName = args.join(" ");
+const list = regions[regionName];
+
+if(!list) return reply("❌ Region not found!");
+
+const buttons = list.map(c => ({
+buttonId: `.time ${c.name}`,
+buttonText: { displayText: c.name },
+type: 1
+}));
+
+return conn.sendMessage(m.chat,{
+text:`📍 *${regionName} Countries*`,
+footer:"Select Country",
+buttons: buttons,
+headerType:1
+},{quoted:mek});
 
 });
