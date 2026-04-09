@@ -69,7 +69,7 @@ async (conn, mek, m, { reply }) => {
     }
 
     if (txt.trim()) {
-        await conn.sendMessage(m.chat, { text: txt }, { quoted: mek });
+        await conn.sendMessage(m.chat, { text: txt }, { quoted: fakevCard });
     }
 
 });
