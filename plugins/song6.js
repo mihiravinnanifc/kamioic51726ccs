@@ -114,6 +114,7 @@ cmd({
         switch (receivedText.trim()) {
 
           case "1":
+            await conn.sendMessage(senderID, { react: { text: '⬆️', key: receivedMsg.key } });
             await conn.sendMessage(senderID, {
               audio: { url: songUrl },
               mimetype: "audio/mpeg",
@@ -121,6 +122,8 @@ cmd({
             break;
 
           case "2":
+            await conn.sendMessage(senderID, { react: { text: '⬆️', key: receivedMsg.key } });
+
             const buffer = await axios.get(songUrl, { responseType: "arraybuffer" });
 
             await conn.sendMessage(senderID, {
@@ -131,6 +134,8 @@ cmd({
             break;
 
           case "3":
+            await conn.sendMessage(senderID, { react: { text: '⬆️', key: receivedMsg.key } });
+
             const mp3Path = path.join(__dirname, `${Date.now()}.mp3`);
             const opusPath = path.join(__dirname, `${Date.now()}.opus`);
 
