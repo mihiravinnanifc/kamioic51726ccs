@@ -33,7 +33,6 @@ cmd({
   filename: __filename,
 }, async (conn, m, store, { from, quoted, q, reply }) => {
   try {
-    /* ===== QUERY ===== */
     let query = q?.trim();
 
     if (!query && m?.quoted) {
@@ -63,8 +62,9 @@ cmd({
 
     const video = search.videos[0];
 
-    /* ===== API (ASITHA) ===== */
-    const api = `https://back.asitha.top/api/ytapi?url=${encodeURIComponent(video.url)}&fo=2&qu=128`;
+    /* ===== ASITHA API + KEY ===== */
+    const api = `https://back.asitha.top/api/ytapi?url=${encodeURIComponent(video.url)}&fo=2&qu=128&apiKey=390f34ac879d9cbad9192a073a9431d6fdc482d79bdd126acee7599905d8e904`;
+
     const { data } = await axios.get(api);
 
     if (!data || !data.downloadData || !data.downloadData.url)
@@ -99,7 +99,7 @@ cmd({
 
     const messageID = sentMsg.key.id;
 
-    // 🧠 Reply listener
+    // Reply listener
     conn.ev.on("messages.upsert", async (msgData) => {
       const receivedMsg = msgData.messages[0];
       if (!receivedMsg?.message) return;
@@ -111,37 +111,26 @@ cmd({
       if (isReplyToBot) {
         await conn.sendMessage(senderID, { react: { text: '⬇️', key: receivedMsg.key } });
 
-        let mediaMsg;
-
         switch (receivedText.trim()) {
+
           case "1":
-            await conn.sendMessage(senderID, { react: { text: '⬆️', key: receivedMsg.key } });
-            mediaMsg = await conn.sendMessage(senderID, {
+            await conn.sendMessage(senderID, {
               audio: { url: songUrl },
               mimetype: "audio/mpeg",
             }, { quoted: receivedMsg });
-            await conn.sendMessage(senderID, { react: { text: '✔️', key: receivedMsg.key } });
             break;
 
           case "2":
-            await conn.sendMessage(senderID, { react: { text: '⬆️', key: receivedMsg.key } });
-            
-            const buffer = await axios.get(songUrl, {
-              responseType: "arraybuffer",
-            });
+            const buffer = await axios.get(songUrl, { responseType: "arraybuffer" });
 
-            mediaMsg = await conn.sendMessage(senderID, {
+            await conn.sendMessage(senderID, {
               document: buffer.data,
               mimetype: "audio/mpeg",
               fileName: `${video.title.replace(/[\\/:*?"<>|]/g, "")}.mp3`,
             }, { quoted: receivedMsg });
-            
-            await conn.sendMessage(senderID, { react: { text: '✔️', key: receivedMsg.key } });
             break;
 
           case "3":
-            await conn.sendMessage(senderID, { react: { text: '⬆️', key: receivedMsg.key } });
-            
             const mp3Path = path.join(__dirname, `${Date.now()}.mp3`);
             const opusPath = path.join(__dirname, `${Date.now()}.opus`);
 
@@ -159,7 +148,7 @@ cmd({
                 .on("error", reject);
             });
 
-            mediaMsg = await conn.sendMessage(senderID, {
+            await conn.sendMessage(senderID, {
               audio: fs.readFileSync(opusPath),
               mimetype: "audio/ogg; codecs=opus",
               ptt: true,
@@ -167,19 +156,18 @@ cmd({
 
             fs.unlinkSync(mp3Path);
             fs.unlinkSync(opusPath);
-            
-            await conn.sendMessage(senderID, { react: { text: '✔️', key: receivedMsg.key } });
             break;
 
           default:
-            await conn.sendMessage(senderID, { react: { text: '😒', key: receivedMsg.key } });
             reply("*❌ Invalid option!*");
         }
+
+        await conn.sendMessage(senderID, { react: { text: '✔️', key: receivedMsg.key } });
       }
     });
 
   } catch (error) {
-    console.error("*Song2 Plugin Error*:", error);
+    console.error("*Song Plugin Error*:", error);
     reply("*Error downloading or sending audio.*");
   }
 });
