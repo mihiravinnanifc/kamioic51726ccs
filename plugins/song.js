@@ -1,212 +1,178 @@
 const { cmd } = require("../command");
-const fetch = require("node-fetch");
+const yts = require("yt-search");
+const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
 const ffmpeg = require("fluent-ffmpeg");
 
-// Fake vCard
+// Fake ChatGPT vCard
 const fakevCard = {
-  key: {
-    fromMe: false,
-    participant: "0@s.whatsapp.net",
-    remoteJid: "status@broadcast",
-  },
-  message: {
-    contactMessage: {
-      displayName: "© Mr Hiruka",
-      vcard: `BEGIN:VCARD
+    key: {
+        fromMe: false,
+        participant: "0@s.whatsapp.net",
+        remoteJid: "status@broadcast"
+    },
+    message: {
+        contactMessage: {
+            displayName: "© Mr Hiruka",
+            vcard: `BEGIN:VCARD
 VERSION:3.0
 FN:Meta
 ORG:META AI;
 TEL;type=CELL;type=VOICE;waid=94762095304:+94762095304
-END:VCARD`,
-    },
-  },
+END:VCARD`
+        }
+    }
 };
 
-// Command
-cmd(
-  {
-    pattern: "song2",
-    alias: [ "play2"],
-    react: "🎵",
-    desc: "Download YouTube song (Audio) via Nekolabs API",
-    category: "download",
-    use: ".song ",
-    filename: __filename,
-  },
+cmd({
+  pattern: "song",
+  alias: ["play", "song1"],
+  desc: "YouTube Song Downloader (Multi Reply + Voice Note Fixed)",
+  category: "download",
+  filename: __filename,
+}, async (conn, m, store, { from, quoted, q, reply }) => {
+  try {
+    let query = q?.trim();
 
-  async (conn, mek, m, { from, reply, q }) => {
-    try {
-      // Get query
-      let query = q?.trim();
+    if (!query && m?.quoted) {
+      query =
+        m.quoted.message?.conversation ||
+        m.quoted.message?.extendedTextMessage?.text ||
+        m.quoted.text;
+    }
 
-      if (!query && m?.quoted) {
-        query =
-          m.quoted.message?.conversation ||
-          m.quoted.message?.extendedTextMessage?.text ||
-          m.quoted.text;
-      }
+    if (!query) {
+      return reply(
+        "⚠️ Please provide a song name or YouTube link (or reply to a message)."
+      );
+    }
 
-      if (!query) {
-        return reply(
-          "⚠️ Please provide a song name or YouTube link (or reply to a message)."
-        );
-      }
+    if (query.includes("youtube.com/shorts/")) {
+      const id = query.split("/shorts/")[1].split(/[?&]/)[0];
+      query = `https://www.youtube.com/watch?v=${id}`;
+    }
 
-      // Shorts → Normal link
-      if (query.includes("youtube.com/shorts/")) {
-        const videoId = query.split("/shorts/")[1].split(/[?&]/)[0];
-        query = `https://www.youtube.com/watch?v=${videoId}`;
-      }
+    await conn.sendMessage(from, { react: { text: '🎵', key: m.key } });
 
-      // API
-      const apiUrl = `https://api.nekolabs.my.id/downloader/youtube/play/v1?q=${encodeURIComponent(
-        query
-      )}`;
-      const res = await fetch(apiUrl);
-      const data = await res.json();
+    /* ===== SEARCH ===== */
+    const search = await yts(query);
+    if (!search.videos.length)
+      return reply("❌ Song not found or API error.");
 
-      if (!data?.success || !data?.result?.downloadUrl) {
-        return reply("❌ Song not found or API error.");
-      }
+    const video = search.videos[0];
 
-      const meta = data.result.metadata;
-      const dlUrl = data.result.downloadUrl;
+    /* ===== ASITHA API + KEY ===== */
+    const api = `https://back.asitha.top/api/ytapi?url=${encodeURIComponent(video.url)}&fo=2&qu=128&apiKey=390f34ac879d9cbad9192a073a9431d6fdc482d79bdd126acee7599905d8e904`;
 
-      // Thumbnail
-      let buffer;
-      try {
-        const thumbRes = await fetch(meta.cover);
-        buffer = Buffer.from(await thumbRes.arrayBuffer());
-      } catch {
-        buffer = null;
-      }
+    const { data } = await axios.get(api);
 
-      // Caption
-      const caption = `
+    if (!data || !data.downloadData || !data.downloadData.url)
+      return reply("*❌ Download error*");
+
+    const songUrl = data.downloadData.url;
+
+    /* ===== MENU ===== */
+    const sentMsg = await conn.sendMessage(
+      from,
+      {
+        image: { url: video.thumbnail },
+        caption: `
 🎶 *RANUMITHA-X-MD SONG DOWNLOADER* 🎶
 
-📑 *Title:* ${meta.title}
-📡 *Channel:* ${meta.channel}
-⏱ *Duration:* ${meta.duration}
-🌐 *Url:* ${meta.url}
+📑 *Title:* ${video.title}
+⏱ *Duration:* ${video.timestamp}
+📆 *Uploaded:* ${video.ago}
+👁 *Views:* ${video.views}
+🔗 *Url:* ${video.url}
 
 🔽 *Reply with your choice:*
 
-1. *Audio Type* 🎵  
-2. *Document Type* 📁  
-3. *Voice Note Type* 🎤  
+1️⃣ Audio Type 🎵  
+2️⃣ Document Type 📁  
+3️⃣ Voice Note Type 🎤  
 
-> © Powerd by 𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗 🌛`;
+> © Powered by 𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝐃 🌛`,
+      },
+      { quoted: fakevCard }
+    );
 
-      const sentMsg = await conn.sendMessage(
-        from,
-        { image: buffer, caption },
-        { quoted: fakevCard }
-      );
+    const messageID = sentMsg.key.id;
 
-      const messageID = sentMsg.key.id;
+    // Reply listener
+    conn.ev.on("messages.upsert", async (msgData) => {
+      const receivedMsg = msgData.messages[0];
+      if (!receivedMsg?.message) return;
 
-      // Reply Listener
-      conn.ev.on("messages.upsert", async (msgUpdate) => {
-        try {
-          const mekInfo = msgUpdate.messages[0];
-          if (!mekInfo?.message) return;
+      const receivedText = receivedMsg.message.conversation || receivedMsg.message.extendedTextMessage?.text;
+      const senderID = receivedMsg.key.remoteJid;
+      const isReplyToBot = receivedMsg.message.extendedTextMessage?.contextInfo?.stanzaId === messageID;
 
-          const userText =
-            mekInfo.message.conversation ||
-            mekInfo.message.extendedTextMessage?.text;
+      if (isReplyToBot) {
+        await conn.sendMessage(senderID, { react: { text: '⬇️', key: receivedMsg.key } });
 
-          const isReply =
-            mekInfo?.message?.extendedTextMessage?.contextInfo?.stanzaId ===
-            messageID;
+        switch (receivedText.trim()) {
 
-          if (!isReply) return;
-
-          const choice = userText.trim();
-
-          // React ⬇️
-          await conn.sendMessage(from, {
-            react: { text: "⬇️", key: mekInfo.key },
-          });
-
-          const safeTitle = meta.title
-            .replace(/[\\/:*?"<>|]/g, "")
-            .slice(0, 80);
-
-          const audioFileName = `${safeTitle}.mp3`;
-          const tempPath = path.join(__dirname, `../temp/${Date.now()}.mp3`);
-          const voicePath = path.join(__dirname, `../temp/${Date.now()}.opus`);
-
-          let type;
-
-          // Option 1: Audio
-          if (choice === "1") {
-            type = {
-              audio: { url: dlUrl },
+          case "1":
+            await conn.sendMessage(senderID, { react: { text: '⬆️', key: receivedMsg.key } });
+            await conn.sendMessage(senderID, {
+              audio: { url: songUrl },
               mimetype: "audio/mpeg",
-              fileName: audioFileName,
-            };
+            }, { quoted: receivedMsg });
+            break;
 
-            // Option 2: Document
-          } else if (choice === "2") {
-            type = {
-              document: { url: dlUrl },
+          case "2":
+            await conn.sendMessage(senderID, { react: { text: '⬆️', key: receivedMsg.key } });
+
+            const buffer = await axios.get(songUrl, { responseType: "arraybuffer" });
+
+            await conn.sendMessage(senderID, {
+              document: buffer.data,
               mimetype: "audio/mpeg",
-              fileName: audioFileName,
-              caption: meta.title,
-            };
+              fileName: `${video.title.replace(/[\\/:*?"<>|]/g, "")}.mp3`,
+            }, { quoted: receivedMsg });
+            break;
 
-            // Option 3: Voice Note
-          } else if (choice === "3") {
-            const audioRes = await fetch(dlUrl);
-            const audioBuffer = Buffer.from(await audioRes.arrayBuffer());
-            fs.writeFileSync(tempPath, audioBuffer);
+          case "3":
+            await conn.sendMessage(senderID, { react: { text: '⬆️', key: receivedMsg.key } });
+
+            const mp3Path = path.join(__dirname, `${Date.now()}.mp3`);
+            const opusPath = path.join(__dirname, `${Date.now()}.opus`);
+
+            const stream = await axios.get(songUrl, { responseType: "stream" });
+            const writer = fs.createWriteStream(mp3Path);
+            stream.data.pipe(writer);
+            await new Promise(r => writer.on("finish", r));
 
             await new Promise((resolve, reject) => {
-              ffmpeg(tempPath)
+              ffmpeg(mp3Path)
                 .audioCodec("libopus")
                 .format("opus")
-                .audioBitrate("64k")
-                .save(voicePath)
+                .save(opusPath)
                 .on("end", resolve)
                 .on("error", reject);
             });
 
-            const voiceBuffer = fs.readFileSync(voicePath);
-
-            type = {
-              audio: voiceBuffer,
+            await conn.sendMessage(senderID, {
+              audio: fs.readFileSync(opusPath),
               mimetype: "audio/ogg; codecs=opus",
               ptt: true,
-            };
+            }, { quoted: receivedMsg });
 
-            fs.unlinkSync(tempPath);
-            fs.unlinkSync(voicePath);
-          } else {
-            return reply("❌ *Invalid choice!*");
-          }
+            fs.unlinkSync(mp3Path);
+            fs.unlinkSync(opusPath);
+            break;
 
-          // React ⬆️
-          await conn.sendMessage(from, {
-            react: { text: "⬆️", key: mekInfo.key },
-          });
-
-          // Send output file
-          await conn.sendMessage(from, type, { quoted: mek });
-
-          // React ✔️
-          await conn.sendMessage(from, {
-            react: { text: "✔️", key: mekInfo.key },
-          });
-        } catch (err) {
-          console.error("reply handler error:", err);
+          default:
+            reply("*❌ Invalid option!*");
         }
-      });
-    } catch (err) {
-      console.error("song cmd error:", err);
-      reply("⚠️ An error occurred while processing your request.");
-    }
+
+        await conn.sendMessage(senderID, { react: { text: '✔️', key: receivedMsg.key } });
+      }
+    });
+
+  } catch (error) {
+    console.error("*Error*:", error);
+    reply("*Error downloading or sending audio.*");
   }
-);
+});
