@@ -1,81 +1,127 @@
 const { cmd } = require("../command");
 const FormData = require("form-data");
+const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
 
-// Fake ChatGPT vCard
-const fakevCard = {
+// dynamic fetch
+const fetch = (...args) => import("node-fetch").then(({ default: fetch }) => fetch(...args));
+
+// Fake Quote
+const metaQuote = {
     key: {
-        fromMe: false,
+        remoteJid: "status@broadcast",
         participant: "0@s.whatsapp.net",
-        remoteJid: "status@broadcast"
+        fromMe: false,
+        id: "META_UPLOAD"
     },
     message: {
         contactMessage: {
-            displayName: "© Mr Hiruka",
+            displayName: "WHITESHADOW CLOUD",
             vcard: `BEGIN:VCARD
 VERSION:3.0
-FN:Meta
-ORG:META AI;
-TEL;type=CELL;type=VOICE;waid=94762095304:+94762095304
+FN:Whiteshadow Uploader
 END:VCARD`
         }
     }
 };
 
-
 cmd({
     pattern: "upload2",
-    alias: "url2",
-    desc: "Upload media using WhiteShadow API",
+    alias: ["tourl2"],
+    desc: "Upload media & get URL",
     category: "tools",
-    react: "📤",
+    react: "🖇️",
     filename: __filename
 },
-async (conn, mek, m, { from, quoted, reply }) => {
+async (conn, mek, m, { from, reply }) => {
     try {
-        if (!quoted) {
-            return reply("❌ Reply to an image or video!");
+        // get quoted or direct message
+        let msg = mek.message?.extendedTextMessage?.contextInfo?.quotedMessage || mek.message;
+
+        // view once fix
+        if (msg?.viewOnceMessageV2) msg = msg.viewOnceMessageV2.message;
+        else if (msg?.viewOnceMessageV2Extension) msg = msg.viewOnceMessageV2Extension.message;
+        else if (msg?.viewOnceMessage) msg = msg.viewOnceMessage.message;
+
+        const type = Object.keys(msg || {}).find(k =>
+            ["imageMessage", "videoMessage", "stickerMessage", "documentMessage"].includes(k)
+        );
+
+        if (!type) {
+            return reply("❌ Reply to an Image/Video/Document/Sticker!");
         }
 
-        const mime = quoted.mtype || "";
-        if (!mime.includes("image") && !mime.includes("video")) {
-            return reply("❌ Only image/video supported!");
+        await conn.sendMessage(from, { react: { text: "⬆️", key: mek.key } });
+
+        const target = msg[type];
+        let mime = target.mimetype || "";
+
+        // extension fix
+        let ext = mime.split("/")[1]?.split(";")[0] || "bin";
+        if (ext === "jpeg") ext = "jpg";
+        if (mime.includes("quicktime")) ext = "mov";
+
+        if (type === "stickerMessage") {
+            ext = "webp";
+            mime = "image/webp";
         }
 
-        reply("⏳ Downloading...");
+        // download type
+        let dlType = "document";
+        if (type === "imageMessage") dlType = "image";
+        else if (type === "videoMessage") dlType = "video";
+        else if (type === "stickerMessage") dlType = "sticker";
 
         // download buffer
-        const buffer = await quoted.download();
-
-        reply("📤 Uploading...");
-
-        // create formdata (same as your example)
-        const fd = new FormData();
-        fd.append("file", buffer, {
-            filename: `upload_${Date.now()}.jpg`
-        });
-
-        // send request (IMPORTANT: full URL)
-        const res = await fetch("https://whiteshadow-uploader.vercel.app/api/upload", {
-            method: "POST",
-            body: fd,
-            headers: fd.getHeaders()
-        });
-
-        const data = await res.json();
-
-        if (!data.status) {
-            return reply("❌ Upload failed!");
+        const stream = await downloadContentFromMessage(target, dlType);
+        let buffer = Buffer.from([]);
+        for await (const chunk of stream) {
+            buffer = Buffer.concat([buffer, chunk]);
         }
 
-        const url = data.result.url;
+        // upload
+        const form = new FormData();
+        form.append("file", buffer, {
+            filename: `Whiteshadow_${Date.now()}.${ext}`,
+            contentType: mime
+        });
+
+        const res = await fetch("https://whiteshadow-uploader.vercel.app/api/upload", {
+            method: "POST",
+            body: form,
+            headers: form.getHeaders()
+        });
+
+        const json = await res.json();
+
+        if (!json.status || !json.result?.url) {
+            return reply("❌ Upload Failed!");
+        }
+
+        const url = json.result.url;
+        const size = (buffer.length / 1024 / 1024).toFixed(2);
+
+        // nice caption
+        const caption = `╭━━━〔 ☁️ *RANUMITHA-X-MD UPLOADER* 〕━━━╮
+┃ 📄 *File:* Ranumitha.${ext}
+┃ ⚖️ *Size:* ${size} MB
+┃ 🔗 *URL:* ${url}
+╰━━━━━━━━━━━━━━━━━━━━━━━╯
+
+> © Powerd by 𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗 🌛`;
 
         // send result
-        return conn.sendMessage(from, {
-            text: `✅ Upload Success!\n\n🔗 ${url}\n\n> © Powerd by 𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗 🌛`
-        }, { quoted: fakevCard });
+        await conn.sendMessage(from, {
+            text: caption,
+            contextInfo: {
+                forwardingScore: 999,
+                isForwarded: true
+            }
+        }, { quoted: metaQuote });
 
-    } catch (err) {
-        console.error(err);
-        reply("❌ Error: " + err.message);
+        await conn.sendMessage(from, { react: { text: "✔️", key: mek.key } });
+
+    } catch (e) {
+        console.error(e);
+        reply("❌ Error: " + e.message);
     }
 });
