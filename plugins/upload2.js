@@ -80,7 +80,8 @@ async (conn, mek, m, { from, reply }) => {
 ┃ 📄 File: upload.${ext}
 ┃ ⚖️ Size: ${size} MB
 ┃ 🔗 URL: ${url}
-╰━━━━━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━━━━━╯
+> © Powerd by 𝗥𝗔𝗡𝗨𝗠𝗜𝗧𝗛𝗔-𝗫-𝗠𝗗 🌛`;
 
         await conn.sendMessage(from, { text: caption });
 
