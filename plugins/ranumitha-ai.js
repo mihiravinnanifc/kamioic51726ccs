@@ -71,8 +71,8 @@ END:VCARD`
 
 // 📌 CMD
 cmd({
-    pattern: "ranumitha-ai",
-    alias: ["ai","gpt"],
+    pattern: "ranumitha-aix",
+    alias: ["aix","gptx"],
     desc: "Chat with Ranumitha AI",
     category: "ai",
     react: "🤖",
