@@ -1,34 +1,37 @@
-const { cmd } = require("../command");
-const OpenAI = require("openai");
-require("dotenv").config();
+const { cmd } = require('../command');
+const OpenAI = require('openai');
 
-// 🔑 OpenAI setup (FIXED)
+// 🔑 OpenAI setup
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
+    apiKey: "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" // <-- මේක replace කරන්න
 });
 
-// 🤖 AI FUNCTION
+// 🤖 AI function
 async function askRanumithaAI(userMessage) {
     try {
-
-        if (!process.env.OPENAI_API_KEY) {
-            return "❌ API key missing in .env";
-        }
-
         const response = await openai.chat.completions.create({
-            model: "gpt-4o-mini", // ✅ FIXED MODEL
+            model: "gpt-4.1-mini",
             messages: [
                 {
                     role: "system",
                     content: `
 You are Ranumitha AI 🤖
-Owner: Hiruka Ranumitha 🇱🇰
+
+Owner: Hiruka Ranumitha
+Country: Sri Lanka 🇱🇰
+
+Personality:
+- Friendly, smart, थोड़ा funny 😄
+- Talk like a WhatsApp buddy
+- Short and clear answers
 
 Rules:
-- Friendly WhatsApp assistant
-- Short answers
-- Use emojis sometimes
-- Help coding & bots
+- Always say you are Ranumitha AI
+- Never say ChatGPT or OpenAI
+- Help with coding, bots, tech
+
+Style:
+- Use emojis 🤖🔥 sometimes
 `
                 },
                 {
@@ -41,12 +44,12 @@ Rules:
         return response.choices[0].message.content;
 
     } catch (err) {
-        console.log("AI ERROR:", err.message);
-        return "❌ AI Error (check API key or model)";
+        console.log(err);
+        return "❌ AI Error";
     }
 }
 
-// 📇 vCard
+// 📇 Fake vCard
 const fakevCard = {
     key: {
         fromMe: false,
@@ -67,11 +70,10 @@ END:VCARD`
 };
 
 // 📌 CMD
-cmd(
-{
-    pattern: "ranumitha-aix",
-    alias: ["aix", "gptx"],
-    desc: "Chat with AI",
+cmd({
+    pattern: "ranumitha-ai",
+    alias: ["ai","gpt"],
+    desc: "Chat with Ranumitha AI",
     category: "ai",
     react: "🤖",
     filename: __filename
@@ -79,13 +81,14 @@ cmd(
 async (conn, mek, m, { from, args }) => {
 
     try {
-
         let text = args.join(" ");
 
-        // reply support
-        const quoted = mek.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+        // 🔹 reply support
+        if (!text && mek.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
 
-        if (!text && quoted) {
+            const quoted =
+                mek.message.extendedTextMessage.contextInfo.quotedMessage;
+
             text =
                 quoted.conversation ||
                 quoted.extendedTextMessage?.text ||
@@ -96,7 +99,7 @@ async (conn, mek, m, { from, args }) => {
 
         if (!text) {
             return conn.sendMessage(from, {
-                text: "🤖 Ask something!\nExample: .ranumitha-aix hello"
+                text: "🤖 *Ask something bro...*\n\nExample:\n.ranumitha-ai Hello"
             }, { quoted: mek });
         }
 
@@ -118,14 +121,14 @@ async (conn, mek, m, { from, args }) => {
         });
 
     } catch (e) {
-        console.log("CMD ERROR:", e);
+        console.log(e);
 
         await conn.sendMessage(from, {
             react: { text: "❌", key: mek.key }
         });
 
         await conn.sendMessage(from, {
-            text: "❌ Bot error occurred"
+            text: "❌ Error with AI"
         }, { quoted: mek });
     }
 });
