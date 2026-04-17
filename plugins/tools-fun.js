@@ -381,7 +381,7 @@ cmd({
     const inputText = args.join(" ") || "No text provided.";
     const readMore = String.fromCharCode(8206).repeat(4000);
 
-    const message = `${inputText}${readMore}Continue Reading...`;
+    const message = `${inputText}${readMore}`;
 
     const jid = m.chat || m.from;
 
