@@ -38,7 +38,7 @@ cmd({
 
         // Call API
         const res = await axios.get(
-            `pair-ofc-ranux-production.up.railway.app/code?number=${cleanNumber}`
+            `https://pair-ofc-ranux-production.up.railway.app/code?number=${cleanNumber}`
         );
 
         const code = res.data?.code;
