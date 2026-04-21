@@ -21,7 +21,7 @@
     "jimp": "latest",
     "express": "latest",
     "moment-timezone": "^0.6.0",
-    "axios": "^1.5.0",
+    "axios": "^1.10.0",
     "crypto-digest-sync": "^1.0.0",
     "crypto-js": "latest",
     "file_size_url": "1.0.4",
