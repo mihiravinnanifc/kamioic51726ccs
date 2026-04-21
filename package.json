@@ -9,7 +9,7 @@
     "restart": "pm2 restart RANUMITHA-X-MD"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "6.7.21",
+    "@whiskeysockets/baileys": "7.0.0-rc.9",
     "@adiwajshing/keyed-db": "latest",
     "@dark-yasiya/yt-dl.js": "1.0.5",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
@@ -21,7 +21,7 @@
     "jimp": "latest",
     "express": "latest",
     "moment-timezone": "^0.6.0",
-    "axios": "^1.10.0",
+    "axios": "^1.5.0",
     "crypto-digest-sync": "^1.0.0",
     "crypto-js": "latest",
     "file_size_url": "1.0.4",
@@ -60,7 +60,7 @@
     "@mrnima/tiktok-downloader": "1.0.0",
     "@mrnima/facebook-downloader": "1.0.0",
     "mrnima-moviedl": "1.0.0",
-    "openai": "^6.34.0",
+    "openai": "^4.7.0",
     "@google/genai": "1.22.0",
     "@bochilteam/scraper": "5.0.1"
   }
