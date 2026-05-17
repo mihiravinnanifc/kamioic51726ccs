@@ -34,6 +34,7 @@ END:VCARD`
 cmd({
     pattern: "settings",
     alias: ["env", "config", "setting"],
+    react: "⚙️",
     desc: "Interactive bot settings menu (Owner Only)",
     category: "system",
     filename: __filename
